@@ -1,6 +1,7 @@
 typedef struct process {
     int pid;
     int burst_time;
+    int arrival_time;
     int waiting_time;
     int turnaround_time;
     int priority;
