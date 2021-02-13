@@ -6,9 +6,5 @@ typedef struct process {
     int waiting_time;
     int turnaround_time;
     int priority;
+    struct process *next;
 } Process;
-
-typedef struct process_node {
-    Process process;
-    Process *next;
-} ProcessNode;
