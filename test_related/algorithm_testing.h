@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 typedef struct process {
     int pid;
     int burst_time;
@@ -8,3 +11,13 @@ typedef struct process {
     int priority;
     struct process *next;
 } Process;
+
+typedef struct processes {
+    int size;
+    Process *head;
+    Process *tail;
+} Processes;
+
+int init_processes(Processes *processes);
+int insert_node(Processes *processes, Process *process);
+int test_insertion();
