@@ -98,14 +98,14 @@ int main(){
 
 #pragma region DEBUG
 	printf("\nSorted burst times:\n");
-	for(i = 0; i < n; i++){
-		printf("%d\t", bt[i]);
-	}
-	printf("\n");
+	//for(i = 0; i < n; i++){
+	//	printf("%d\t", bt[i]);
+	//}
+	//printf("\n");
 #pragma endregion
 
 #pragma region Standard SJF
-	printf("\nSJF process resolution order:\n");
+	//printf("\nSJF process resolution order:\n");
 	for (i = 0; i < n; i++){
 
 		// If not first process to run
@@ -142,9 +142,9 @@ int main(){
 			ts = ts + bt[i];
 		}
 
-		printf("%d\t", bt[i]);
+		//printf("%d\t", bt[i]);
 	}
-	printf("\n");
+	//printf("\n");
 
 
 	
@@ -172,13 +172,13 @@ int main(){
 
 	// Reset Variables
 	twt = 0, ttt = 0, lp_twt = 0, lp_ttt = 0, ts = 0;
-	printf("\nK-Factor Algoritm process resolution order:\n");
+	//printf("\nK-Factor Algoritm process resolution order:\n");
 
 	for (i = 0; i < n; i++){
 		// First/Last process execute
 		if(i == 0 || i+1 >= n){
 
-			printf("%d\t", bt[i]);
+			//printf("%d\t", bt[i]);
 
 			wt[i] = ts;
 			tat[i] = ts + bt[i];
@@ -205,7 +205,7 @@ int main(){
 					lp_twt = lp_twt + wt[i + 1];	//	Add to low prio total wait time
 				}
 				
-				printf("%d\t",bt[i+1]);
+				//printf("%d\t",bt[i+1]);
 				
 				int temp = bt[i+1];
 				bt[i+1] = bt[i];
@@ -225,7 +225,7 @@ int main(){
 					lp_ttt = lp_ttt + tat[i];	//	Add to low prio total turn around time
 					lp_twt = lp_twt + wt[i];	//	Add to low prio total wait time
 				}
-				printf("%d\t", bt[i]);
+				//printf("%d\t", bt[i]);
 			}
 		}
 
@@ -237,7 +237,7 @@ int main(){
 		// printf("\niteration = %d\ttime = %d\tK = %d\n",i, ts, k);
 	}
 
-	printf("\n");
+	//printf("\n");
 
 
 	// printf("\n*DEBUG* twt:%.2fms\tttt:%.2fms\tlp_twt:%.2fms\tlp_ttt:%.2fms\n\n", twt, ttt, lp_twt, lp_ttt);
