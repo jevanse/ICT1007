@@ -1,4 +1,7 @@
+# Directories
 **/solutions/
 **/.vscode/
 
+# Files
 **/.replit
+**/*.exe
