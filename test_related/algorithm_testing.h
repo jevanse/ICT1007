@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct process {
     int pid;
@@ -21,3 +22,7 @@ typedef struct processes {
 int init_processes(Processes *processes);
 int insert_node(Processes *processes, Process *process);
 int test_insertion();
+int read_file(const char *filename, char ** file_contents);
+int parse_file_contents(const char *file_contents, Processes **processes);
+int get_processes(const char *filename, Processes **processes);
+void test_read();
