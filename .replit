@@ -1,2 +1,0 @@
-language = "c"
-run = "C ./Paper1.c"
