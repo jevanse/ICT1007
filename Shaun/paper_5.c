@@ -3,7 +3,11 @@
 #include <stdbool.h>
 #include "paper_5.h"
 
-
+/* EDGE CASE: 
+	Arrival times are not sorted and the 2nd and 3rd node in the linked list is in the time window to be added
+	but the, in theory if 2nd node AT > 3rd node AT, 3rd node should run first, but in this code the 2nd node gets
+	added. 
+*/
 #define LOW_PRIORITY 1
 #define MED_PRIORITY 2
 #define HIGH_PRIORITY 3
