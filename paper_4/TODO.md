@@ -4,3 +4,4 @@
 - Translate back from EDRRProcess to Processes
 - For every call to calloc and malloc, check if memory address is NULL
 - Free memory after everything
+- Validate input read from file (i.e. improve `read_file()`)
