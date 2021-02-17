@@ -1,4 +1,5 @@
 #include "../test_related/algorithm_testing.h"
+#include <ctype.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -11,6 +12,9 @@
 #define WAITING 2
 #define TERMINATED 3
 
+#define MAX_FILE_PATH 4096
+#define MAX_NUM_BUF 5
+
 typedef struct edrr_process {
     int pid;
     int burst_time;
@@ -22,6 +26,24 @@ typedef struct edrr_process {
     int queue;
     struct edrr_process *next;
 } EDRRProcess;
+
+int is_number(const char *str) {
+    if (!str) {
+        return FALSE;
+    }
+
+    if (strlen(str) == 0) {
+        return FALSE;
+    }
+
+    for (int i = 0; i < strlen(str); i++) {
+        if (isdigit(str[i]) == 0) {
+            return FALSE;
+        }
+    }
+    
+    return TRUE;
+}
 
 EDRRProcess *copy_list(Process *head) {
     // Check if head is NULL
@@ -227,43 +249,71 @@ int main(int argc, char const *argv[]) {
             printf("\tDo you wish to:\n");
             printf("\n\t\t1. Enter path to file containing process parameters\n");
             printf("\t\t2. Enter process parameters directly into program\n");
+            printf("\t\t3. Exit program\n");
 
             printf("\n\tEnter your option: ");
 
             user_option = getchar();
-            if (user_option != '1' && user_option != '2') {
-                printf("\n\t[-] Please enter 1 or 2.\n\n");
+            if (user_option != '1' && user_option != '2' && user_option != '3') {
+                printf("\n\t[-] Please enter 1, 2 or 3.\n\n");
             }
             if (user_option != '\n') {
                 getchar();
             }
-        } while (user_option != '1' && user_option != '2');
+        } while (user_option != '1' && user_option != '2' && user_option != '3');
         
         printf("\n\t[+] You have selected '%c'.\n", user_option);
-
+        
         if (user_option == '1') {
-            // read in filename
-        } else {
+            filename = (char *)calloc(1, MAX_FILE_PATH);
+            do {
+                printf("\n\tEnter path to file (press 'q' to exit): ");
+                fgets(filename, MAX_FILE_PATH - 1, stdin);
+                filename[strlen(filename) - 1] = '\0';
+                if (strncmp(filename, "q", 1) == 0) {
+                    printf("\n\t[i] User pressed 'q'. Exiting program...\n\n");
+                    return 0;
+                }
+                if (strlen(filename) == 0)
+                    printf("\n\t[-] Please enter a valid file path.\n");
+            } while(strlen(filename) == 0);
+        } else if (user_option == '2') {
             // read in params
+            int num_of_processes = -1;
+            do {
+                printf("\n\tEnter the number of processes to be scheduled ('0' to exit): ");
+                scanf("%d", &num_of_processes);
+                if (num_of_processes == 0) {
+                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                    return 0;
+                }
+                if (num_of_processes == -1) {
+                    printf("\n\tPlease enter a number.\n");
+                }
+            } while (num_of_processes < 0);
+            printf("Number of processes: %d", num_of_processes);
+            return 0;
+        } else {
+            printf("\n\t[i] User pressed '3'. Exiting program...\n\n");
+            return 0;
         }
-        return 0;
     }
 
     if (filename) {
         int get_process_status = get_processes(filename, &processes);
 
         if (get_process_status == MEM_ALLOC_FAILED) {
-            printf("[-] get_process_status: Unable to allocate memory for reading file.\n");
+            printf("\n\t[-] get_process_status: Unable to allocate memory for reading file.\n\n");
             return EXIT_FAILURE;
         }
 
         if (get_process_status == FILE_READ_FAILED) {
-            printf("[-] get_process_status: Unable to read %s.\n", filename);
+            printf("\n\t[-] get_process_status: Unable to read %s.\n\n", filename);
             return EXIT_FAILURE;
         }
 
         if (processes->size == 0) {
-            printf("[-] main: There are no processes to be scheduled.\n");
+            printf("\n\t[-] main: There are no processes to be scheduled.\n\n");
             return EXIT_FAILURE;
         }
 
@@ -297,7 +347,6 @@ int main(int argc, char const *argv[]) {
                 edrr_processes->queue = WAITING;
             }
         } else if (edrr_processes->queue == WAITING) {
-            // if (!there_are_processes_ready(edrr_processes_head)) {
             if (edrr_processes->burst_time <= time_quantum) {
                 edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
                 edrr_processes->waiting_time = edrr_processes->turnaround_time - edrr_processes->burst_time;
@@ -309,7 +358,6 @@ int main(int argc, char const *argv[]) {
             } else {
                 edrr_processes->queue = WAITING;
             }
-            // }
         }
 
         edrr_processes = edrr_processes->next;
@@ -321,13 +369,15 @@ int main(int argc, char const *argv[]) {
 
     edrr_processes = edrr_processes_head;
 
-    printf("Process\t\tBurst Time\tWaiting Time\tTurn around time\n");
-    printf("-------\t\t----------\t------------\t----------------\n");
+    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\n");
+    printf("\t-----------\t------------\t----------\t------------\t----------------\n");
 
     while (edrr_processes) {
-        printf("%d\t\t%d\t\t%d\t\t%d\n", edrr_processes->pid, edrr_processes->cpu_time, edrr_processes->waiting_time, edrr_processes->turnaround_time);
+        printf("\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", edrr_processes->pid, edrr_processes->arrival_time, edrr_processes->cpu_time, edrr_processes->waiting_time, edrr_processes->turnaround_time);
         edrr_processes = edrr_processes->next;
     }
+
+    printf("\n");
 
     return EXIT_SUCCESS;
 }
