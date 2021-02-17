@@ -1,8 +1,5 @@
 #include "algorithm_testing.h"
 
-#define FILE_READ_FAILED -1
-#define MEM_ALLOC_FAILED -2
-
 int main()
 {
     printf("** Start of tests **\n\n");
