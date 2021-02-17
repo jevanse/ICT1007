@@ -1,0 +1,3 @@
+- Comment on codes
+- Work on README.md
+- Work on input / output
