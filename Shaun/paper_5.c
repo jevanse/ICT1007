@@ -61,6 +61,8 @@ int improved_round_robin(Processes * processes, int quantum)
 		{
 			time_at_start_of_quantum = time_elapsed;
 			current = dequeue(process_queue, &queue_front, &queue_rear);
+			//TODO: Check for processes to be run here, if queue is empty, skip to next arrival time.
+			//	Implementation: Sort by arrival time, to find next biggest arrival time 
 			if (current == NULL) continue;
 			time_quantum = quantum; //quantum should always reset'
 			if (current->burst_time < time_quantum) time_quantum = current->burst_time;
