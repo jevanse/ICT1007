@@ -23,20 +23,11 @@ typedef struct edrr_process {
     struct edrr_process *next;
 } EDRRProcess;
 
-EDRRProcess *copy_list(Processes *processes) {
-    // If for some reason processes itself is NULL,
-    // return NULL
-    if (!processes) {
+EDRRProcess *copy_list(Process *head) {
+    // Check if head is NULL
+    if (!head) {
         return NULL;
     }
-
-    // Either of the check is good enough,
-    // but both are made just to be safe.
-    if (processes->size == 0 || processes->head == NULL) {
-        return NULL;
-    }
-
-    Process *head = processes->head;
 
     EDRRProcess *new_process = (EDRRProcess *)calloc(1, sizeof(EDRRProcess));
 
@@ -217,33 +208,66 @@ int main(int argc, char const *argv[]) {
     int added_to_ready_queue = FALSE;
     int maximum_burst_time = 0;
     float time_quantum = 0.0;
+
     char *filename = NULL;
 
     if (argc == 2) {
-        // Parse and validate filename
+        filename = (char *)argv[1];
     }
+
+    printf("\n");
 
     if (!filename) {
         // No filename given
         // Give users the option of either 
         // entering file containing process params
         // or enter these params directly to program
+        int user_option = 0;
+        do {
+            printf("\tDo you wish to:\n");
+            printf("\n\t\t1. Enter path to file containing process parameters\n");
+            printf("\t\t2. Enter process parameters directly into program\n");
+
+            printf("\n\tEnter your option: ");
+
+            user_option = getchar();
+            if (user_option != '1' && user_option != '2') {
+                printf("\n\t[-] Please enter 1 or 2.\n\n");
+            }
+            if (user_option != '\n') {
+                getchar();
+            }
+        } while (user_option != '1' && user_option != '2');
+        
+        printf("\n\t[+] You have selected '%c'.\n", user_option);
+
+        if (user_option == '1') {
+            // read in filename
+        } else {
+            // read in params
+        }
+        return 0;
     }
 
     if (filename) {
-        int get_process_status = get_processes(&processes);
+        int get_process_status = get_processes(filename, &processes);
 
         if (get_process_status == MEM_ALLOC_FAILED) {
-            printf("[-] get_process_status: Unable to allocate memory for reading file.");
+            printf("[-] get_process_status: Unable to allocate memory for reading file.\n");
             return EXIT_FAILURE;
         }
 
         if (get_process_status == FILE_READ_FAILED) {
-            printf("[-] get_process_status: Unable to read %s.", FILENAME);
+            printf("[-] get_process_status: Unable to read %s.\n", filename);
             return EXIT_FAILURE;
         }
 
-        edrr_processes = copy_list(processes);
+        if (processes->size == 0) {
+            printf("[-] main: There are no processes to be scheduled.\n");
+            return EXIT_FAILURE;
+        }
+
+        edrr_processes = copy_list(processes->head);
     }
 
     sort_processes_based_on_arrival_time(&edrr_processes);
@@ -252,16 +276,57 @@ int main(int argc, char const *argv[]) {
     // Loop till end of list
     while (edrr_processes) {
         added_to_ready_queue = add_to_ready_queue(&edrr_processes, time_elapsed);
+        
+        if (added_to_ready_queue) {
+            maximum_burst_time = get_maximum_burst_time(edrr_processes_head);
+            time_quantum = 0.8 * maximum_burst_time;
+            edrr_processes = edrr_processes_head;
+            continue;
+        }
 
         if (edrr_processes->queue == READY) {
+            if (edrr_processes->burst_time <= time_quantum) {
+                edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
+                edrr_processes->waiting_time = edrr_processes->turnaround_time - edrr_processes->burst_time;
 
+                time_elapsed += edrr_processes->burst_time;
+                
+                edrr_processes->burst_time = 0;
+                edrr_processes->queue = TERMINATED;
+            } else {
+                edrr_processes->queue = WAITING;
+            }
         } else if (edrr_processes->queue == WAITING) {
-            
+            // if (!there_are_processes_ready(edrr_processes_head)) {
+            if (edrr_processes->burst_time <= time_quantum) {
+                edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
+                edrr_processes->waiting_time = edrr_processes->turnaround_time - edrr_processes->burst_time;
+
+                time_elapsed += edrr_processes->burst_time;
+                
+                edrr_processes->burst_time = 0;
+                edrr_processes->queue = TERMINATED;
+            } else {
+                edrr_processes->queue = WAITING;
+            }
+            // }
         }
 
         edrr_processes = edrr_processes->next;
-        if (!edrr_process && there_are_processes_waiting(edrr_processes_head))
+        if (!edrr_processes && there_are_processes_waiting(edrr_processes_head)) {
             edrr_processes = edrr_processes_head;
+            time_quantum = maximum_burst_time;
+        }
+    }
+
+    edrr_processes = edrr_processes_head;
+
+    printf("Process\t\tBurst Time\tWaiting Time\tTurn around time\n");
+    printf("-------\t\t----------\t------------\t----------------\n");
+
+    while (edrr_processes) {
+        printf("%d\t\t%d\t\t%d\t\t%d\n", edrr_processes->pid, edrr_processes->cpu_time, edrr_processes->waiting_time, edrr_processes->turnaround_time);
+        edrr_processes = edrr_processes->next;
     }
 
     return EXIT_SUCCESS;
