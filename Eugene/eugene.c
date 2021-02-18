@@ -12,14 +12,14 @@ typedef struct process{
 } Process;
 
 
+
 void insert_element(int array[], int new_element, int position, int n){
-  int temp = array[position];
   
   for(int i = n - 1; i > position; i--){
     array[i] = array[i-1];
 
   }
-  array[position+1] = temp;
+
    array[position] = new_element;
  
 }
@@ -220,26 +220,36 @@ for(i=0; i < n; i ++){
 
 	int timer = 0;
 	while (timer <= max_arrival_time + max_process_time){
-		for(i=0; i < n; i++){
+		for(i= 0; i < n; i++){
 			if (timer == process[i].arrival_time){ //If new process arrive
           if (ready_q[0] == 0){ //If no new process exist in ready queue
             	ready_q[0] = process[i].process_number; //Add to front of ready queue
 
               
               printf("\nThis process %d is inserted at %d seconds\n", process[i].process_number, timer);
-              printf("Burst time:\n%d", process[process[i].process_number -1].burst_time);
+              printf("Burst time:%d\n", process[process[i].process_number -1].burst_time);
+              
               process[process[i].process_number -1].burst_time = process[process[i].process_number -1].burst_time - 1; 
-              printf("Time left: %d", process[process[i].process_number -1].burst_time);
+              printf("Time left: %d\n", process[process[i].process_number -1].burst_time);
           }
-           else {
-              printf("There is a process in the ready queue");
-              printf("Process number waiting: %d", process[i].process_number); 
-              printf("First position at ready queue %d",ready_q[0]);
+           else { //Compare exe time of process with the process in the queue from front to rear
+
+              printf("Process number waiting: %d\n", process[i].process_number); 
+              printf("First position at ready queue %d\n",ready_q[0]);
               int exe_time_incoming = process[i].burst_time;
+     
               for(j = 0; j < n; j++){
-                if(exe_time_incoming < process[ready_q[j]-1].burst_time && ready_q[j] != 0){
-                printf("To be inserted before Process %d ",ready_q[j]);
-                
+                printf("\nIncoming exe time:%d\n", exe_time_incoming);
+                printf("Existing exe time:%d\n", process[ready_q[j]-1].burst_time);
+                if(exe_time_incoming < process[ready_q[j]-1].burst_time){
+                printf("Process %d To be inserted before Process %d ",process[i].process_number ,ready_q[j]);
+                printf("\nPosition %d", j);
+                printf("\nProcess number %d", process[i].process_number);
+                printf("\nReady queue First position: %d", ready_q[0]);
+                insert_element(ready_q, process[i].process_number, j , n);
+                printf("\nReady queue After position: %d", ready_q[0]);
+                // printf("\nReady queue %d", ready_q[0]);
+                // printf("\nReady queue %d", ready_q[1]);
                 }
               }
               }
@@ -343,7 +353,7 @@ for(i=0; i < n; i ++){
 	timer++;
   printf("\nCurrent time %d\n", timer);
 	}
-  
+
   
   }
   
