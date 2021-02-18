@@ -12,6 +12,21 @@ typedef struct process{
 } Process;
 
 
+void insert_element(int array[], int new_element, int position, int n){
+  int temp = array[position];
+  
+  for(int i = n - 1; i > position; i--){
+    array[i] = array[i-1];
+
+  }
+  array[position+1] = temp;
+   array[position] = new_element;
+ 
+}
+
+
+
+
 void ascending(int array[], int number){
 	// Arranges Ready Queue according to burst time in ascending order
   	int array_buffer;
@@ -80,13 +95,12 @@ for(i = 0; i < n; i++){
   printf("Process %d \t burst time: %d \t arrival time: %d\n", i+1, process[i].burst_time, process[i].arrival_time);
 }
 
-
-printf("The max process time: %d\n", max_process_time);
-printf("The latest arrival time: %d", max_arrival_time);
-
-
 int ready_q[n];
-ready_q[0] = 0; //Control variable to check if array is empty
+      //Control variable to check if array is empty
+for(i=0; i < n; i ++){
+  ready_q[i] = 0;
+  printf("%d\n", ready_q[i]);
+}
 
 
 
@@ -206,48 +220,105 @@ ready_q[0] = 0; //Control variable to check if array is empty
 
 	int timer = 0;
 	while (timer <= max_arrival_time + max_process_time){
-		for(i=0; i < max_process_time; i++){
-			if (timer == process[i].arrival_time){
-				
-				//Add to ready queue
-				ready_q[i] = process[i].process_number;
-				printf("\nThis process %d is inserted at %d seconds\n", process[i].process_number, timer);
+		for(i=0; i < n; i++){
+			if (timer == process[i].arrival_time){ //If new process arrive
+          if (ready_q[0] == 0){ //If no new process exist in ready queue
+            	ready_q[0] = process[i].process_number; //Add to front of ready queue
 
-				// Aft adding still compare the exe times then allocate CPU
+              
+              printf("\nThis process %d is inserted at %d seconds\n", process[i].process_number, timer);
+              printf("Burst time:\n%d", process[process[i].process_number -1].burst_time);
+              process[process[i].process_number -1].burst_time = process[process[i].process_number -1].burst_time - 1; 
+              printf("Time left: %d", process[process[i].process_number -1].burst_time);
+          }
+           else {
+              printf("There is a process in the ready queue");
+              printf("Process number waiting: %d", process[i].process_number); 
+              printf("First position at ready queue %d",ready_q[0]);
+              int exe_time_incoming = process[i].burst_time;
+              for(j = 0; j < n; j++){
+                if(exe_time_incoming < process[ready_q[j]-1].burst_time && ready_q[j] != 0){
+                printf("To be inserted before Process %d ",ready_q[j]);
+                
+                }
+              }
+              }
+        //     //Compare exe_time of process with the existing processes from front to rear
+        //      for (j= i + 1; j < n; j++){
+        //        if (process[i].burst_time < ){
 
-        //   if (process[i].burst_time <= TQ){
+        //        }
+        //      }
+           }
+
+        //   if (process[i].burst_time <= TQ && process[i].burst_time == timer){
         //     process[i].burst_time = 0;
         //     printf("time left for process %d: %d", process[i].process_number, process[i].burst_time);
         // }  
+          
+         
+
         //   else{
-        //   process[i].burst_time = process[i].burst_time - TQ;
+            
+        //       process[i].burst_time = process[i].burst_time - 1;
+        //     }
+            
         //   printf("time left for process %d: %d", process[i].process_number, process[i].burst_time);
         // }
 
+        // else if(ready_q[i] != 0){
+        //   if(process[ready_q[i]-1].burst_time <= TQ){
+        //       process[ready_q[i]-1].burst_time = process[ready_q[i]-1].burst_time - 1;
+        //   }
+        // }
+
+          //printf("\n%d\n", ready_q[i]);
+          
+          // for (int i = 0; i < n; ++i) { //Arrangning the processes
+		      //   for (int j = i + 1; j < n; ++j) {
+			    //     if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] != 0){
+				  //         lmao_buffer = ready_q[i];
+				  //         ready_q[i] = ready_q[j];
+				  //         ready_q[j] = lmao_buffer;
+			    //     }
+		      //   }
+	        // }
+          //printf("\nNext in ready queue:%d", ready_q[i]);
+          // if(process[i].process_number == ready_q[i]){
+          //   printf("\n%d\n",process[i].burst_time);
+          // }
+
+          //printf("%d",process[ready_q[i]].burst_time);
+          // for(j = i +1; j < n; j++){
+
+          // }
       }
-      else{ //If not new process added to queue
-          if(ready_q[0] != 0){
-           for(i = 0; i<n; ++i){
-             for(j = i + 1 ; j<n; ++j)
-             if(process[ready_q[i]].burst_time > process[ready_q[j]].burst_time){
-                  lmao_buffer = process[ready_q[i]].burst_time;
-				          process[ready_q[i]].burst_time = process[ready_q[j]].burst_time;
-				          process[ready_q[j]].burst_time = lmao_buffer;
-             }
-           }
-            if (process[ready_q[i]].burst_time <= TQ){
-            process[ready_q[i]].burst_time = 0;
+      // else{ //If no new process added to queue
+      //     if(ready_q[0] != 0){
+      //      for(i = 0; i<n; ++i){
+      //        for(j = i + 1 ; j<n; ++j)
+      //        if(process[ready_q[i]].burst_time > process[ready_q[j]].burst_time){
+      //             lmao_buffer = process[ready_q[i]].burst_time;
+			// 	          process[ready_q[i]].burst_time = process[ready_q[j]].burst_time;
+			// 	          process[ready_q[j]].burst_time = lmao_buffer;
+      //        }
+      //      }
+      //       if (process[ready_q[i]].burst_time <= TQ){
+      //       process[ready_q[i]].burst_time = 0;
         
-        }  
-            else{
-            process[ready_q[i]].burst_time = process[ready_q[i]].burst_time - TQ;
+      //   }  
+      //       else{
+      //       process[ready_q[i]].burst_time = process[ready_q[i]].burst_time - TQ;
            
-        }
-          }
-        }
+      //   }
+      //     }
+      //     else{
+      //       printf("execution done");
+      //     }
+      //   }
 
 
-      }
+      
 
 
 
@@ -270,10 +341,11 @@ ready_q[0] = 0; //Control variable to check if array is empty
 				// printf("\nNext in Ready Queue: Process %d", ready_q[i]);
 		
 	timer++;
-  printf("\nCurrent time %d", timer);
+  printf("\nCurrent time %d\n", timer);
 	}
-  }
   
+  
+  }
   
 
     //timer++;
@@ -333,4 +405,3 @@ ready_q[0] = 0; //Control variable to check if array is empty
     
   
 
-  
