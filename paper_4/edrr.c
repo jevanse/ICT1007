@@ -216,9 +216,17 @@ int there_are_new_processes(EDRRProcess *process) {
 }
 
 int get_minimum_arrival_time(EDRRProcess * process) {
-    int minimum_arrival_time = 0;
+    int minimum_arrival_time = -1;
 
     if (!process) return minimum_arrival_time;
+
+    while (process) {
+        if (process->queue == NEW) {
+            minimum_arrival_time = process->arrival_time;
+            break;
+        }
+        process = process->next;
+    }
 
     while (process) {
         if (process->arrival_time < minimum_arrival_time && 
@@ -227,6 +235,8 @@ int get_minimum_arrival_time(EDRRProcess * process) {
         }
         process = process->next;
     }
+
+    return minimum_arrival_time;
 }
 
 int get_maximum_burst_time(EDRRProcess *process) {
@@ -405,6 +415,15 @@ int main(int argc, char const *argv[]) {
         }
 
         edrr_processes = edrr_processes->next;
+        if (!edrr_processes && !there_are_processes_waiting(edrr_processes_head) && 
+            !there_are_processes_ready(edrr_processes_head) && 
+            there_are_new_processes(edrr_processes_head)) {
+            
+            time_elapsed = get_minimum_arrival_time(edrr_processes_head);
+            edrr_processes = edrr_processes_head;
+
+            continue;
+        }
         if (!edrr_processes && there_are_processes_waiting(edrr_processes_head)) {
             edrr_processes = edrr_processes_head;
             time_quantum = maximum_burst_time;
