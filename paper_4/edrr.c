@@ -45,6 +45,36 @@ int is_number(const char *str) {
     return TRUE;
 }
 
+void update_process_value(int pid, int turnaround_time, int waiting_time, Process **processes) {
+    if (!processes) return;
+    
+    Process *head = *processes;
+
+    while(*processes && (*processes)->pid != pid) {
+        (*processes) = (*processes)->next;
+    }
+
+    (*processes)->turnaround_time = turnaround_time;
+    (*processes)->waiting_time = waiting_time;
+
+    *processes = head;
+}
+
+void copy_list_back(Process **head, EDRRProcess *edrr_head) {
+    if (!head || !edrr_head) return;
+
+    while(edrr_head) {
+        update_process_value(edrr_head->pid, edrr_head->turnaround_time, edrr_head->waiting_time, head);
+        edrr_head = edrr_head->next;
+    }
+}
+
+// From https://www.geeksforgeeks.org/c-program-to-create-copy-of-a-singly-linked-list-using-recursion/#:~:text=Allocate%20the%20new%20Node%20in,and%20the%20duplicate%20linked%20list.
+/**
+ * Creates a local copy of the list of processes read from file
+ * 
+ * - The local copy will contain more attributes that are only needed for the local logic
+ */
 EDRRProcess *copy_list(Process *head) {
     // Check if head is NULL
     if (!head) {
@@ -183,6 +213,20 @@ int there_are_new_processes(EDRRProcess *process) {
     }
 
     return FALSE;
+}
+
+int get_minimum_arrival_time(EDRRProcess * process) {
+    int minimum_arrival_time = 0;
+
+    if (!process) return minimum_arrival_time;
+
+    while (process) {
+        if (process->arrival_time < minimum_arrival_time && 
+            process->queue == NEW) {
+            minimum_arrival_time = process->arrival_time;
+        }
+        process = process->next;
+    }
 }
 
 int get_maximum_burst_time(EDRRProcess *process) {
@@ -378,6 +422,19 @@ int main(int argc, char const *argv[]) {
     }
 
     printf("\n");
+
+    edrr_processes = edrr_processes_head;
+    Process *process = processes->head;
+
+    copy_list_back(&process, edrr_processes);
+
+    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\n");
+    printf("\t-----------\t------------\t----------\t------------\t----------------\n");
+
+    while (process) {
+        printf("\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", process->pid, process->arrival_time, process->cpu_time, process->waiting_time, process->turnaround_time);
+        process = process->next;
+    }
 
     return EXIT_SUCCESS;
 }
