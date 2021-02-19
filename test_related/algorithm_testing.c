@@ -1,13 +1,14 @@
 #include "algorithm_testing.h"
-
-// int main()
-// {
-//     printf("** Start of tests **\n\n");
-//     test_insertion();
-//     test_read();
-//     printf("** End of tests **\n");
-// }
-
+/*
+Include this main if you're testing this file
+int main()
+{
+    printf("** Start of tests **\n\n");
+    test_insertion();
+    test_read();
+    printf("** End of tests **\n");
+}
+*/
 int init_processes(Processes *processes)
 {
     processes->head = NULL;
