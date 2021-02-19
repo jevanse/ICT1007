@@ -283,16 +283,16 @@ for(i=0; i < n; i ++){
            }
             
            
-      //      else if(ready_q[0] != 0){ //Process exist
-      //      printf("Process alr exist");
-      //         if(process[ready_q[0]-1].burst_time <= TQ){
-      //            process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+           else if(ready_q[0] != 0){ //Process exist
+           printf("Process alr exist");
+              if(process[ready_q[0]-1].burst_time <= TQ){
+                 process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
             
                  
-      //         }
-      //     //      process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
-      //     //      printf("Process %d remaining time %d", process[ready_q[0]-1].burst_time, process[ready_q[0]-1].process_number);
-      //   }
+              }
+               process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+               printf("Process %d remaining time %d", process[ready_q[0]-1].burst_time, process[ready_q[0]-1].process_number);
+        }
   
       
 	}
