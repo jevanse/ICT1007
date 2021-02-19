@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "paper_5.h"
+/*
+Todo: 
+	1) Copy from processes to own struct, as I require more variables
+	2) Update generate time quantum function
+	3) Account for edge case where there is a period of idling between processes
+		-> If no processes are in queue, check for next earliest arrival time and set time elapsed to that
 
-/* EDGE CASE: 
-	Arrival times are not sorted and the 2nd and 3rd node in the linked list is in the time window to be added
-	but the, in theory if 2nd node AT > 3rd node AT, 3rd node should run first, but in this code the 2nd node gets
-	added. 
+
 */
 #define LOW_PRIORITY 1
 #define MED_PRIORITY 2
