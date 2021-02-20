@@ -22,6 +22,7 @@ typedef struct edrr_process {
     int waiting_time;
     int arrival_time;
     int turnaround_time;
+    int response_time;
     int priority;
     int queue;
     struct edrr_process *next;
@@ -76,7 +77,7 @@ int is_number(const char *str) {
     return TRUE;
 }
 
-void update_process_value(int pid, int turnaround_time, int waiting_time, Process **processes) {
+void update_process_value(int pid, int turnaround_time, int waiting_time, int response_time, Process **processes) {
     if (!processes) return;
     
     Process *head = *processes;
@@ -87,6 +88,7 @@ void update_process_value(int pid, int turnaround_time, int waiting_time, Proces
 
     (*processes)->turnaround_time = turnaround_time;
     (*processes)->waiting_time = waiting_time;
+    (*processes)->response_time = response_time;
 
     *processes = head;
 }
@@ -95,7 +97,13 @@ void copy_list_back(Process **head, EDRRProcess *edrr_head) {
     if (!head || !edrr_head) return;
 
     while(edrr_head) {
-        update_process_value(edrr_head->pid, edrr_head->turnaround_time, edrr_head->waiting_time, head);
+        update_process_value(
+            edrr_head->pid, 
+            edrr_head->turnaround_time, 
+            edrr_head->waiting_time, 
+            edrr_head->response_time, 
+            head
+        );
         edrr_head = edrr_head->next;
     }
 }
@@ -453,6 +461,7 @@ int main(int argc, char const *argv[]) {
 
         if (edrr_processes->queue == READY) {
             if (edrr_processes->burst_time <= time_quantum) {
+                edrr_processes->response_time = time_elapsed - edrr_processes->arrival_time;
                 edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
                 edrr_processes->waiting_time = edrr_processes->turnaround_time - edrr_processes->burst_time;
 
@@ -465,6 +474,7 @@ int main(int argc, char const *argv[]) {
             }
         } else if (edrr_processes->queue == WAITING) {
             if (edrr_processes->burst_time <= time_quantum) {
+                edrr_processes->response_time = time_elapsed - edrr_processes->arrival_time;
                 edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
                 edrr_processes->waiting_time = edrr_processes->turnaround_time - edrr_processes->burst_time;
 
