@@ -27,6 +27,37 @@ typedef struct edrr_process {
     struct edrr_process *next;
 } EDRRProcess;
 
+void free_process_list(Process *head) {
+    Process *prev = head;
+    Process *current = head;
+    while (current) {
+        prev = current;
+        current = prev->next;
+        free(prev);
+    }
+}
+
+// From https://www.geeksforgeeks.org/linked-list-set-2-inserting-a-node/?ref=lbp
+void add_process(EDRRProcess **list, EDRRProcess *node) {
+    EDRRProcess *prev, *next;
+
+    if (!*list) {
+        // If list is empty,
+        // initialise with node
+        *list = node;
+    } else {
+        prev = NULL;
+        next = *list;
+        
+        while (next) {
+            prev = next;
+            next = next->next;
+        }
+
+        prev->next = node;
+    }
+}
+
 int is_number(const char *str) {
     if (!str) {
         return FALSE;
@@ -334,6 +365,8 @@ int main(int argc, char const *argv[]) {
         } else if (user_option == '2') {
             // read in params
             int num_of_processes = -1;
+            int burst_time_entered = -1, 
+                arrival_time_entered = -1;
             do {
                 printf("\n\tEnter the number of processes to be scheduled ('0' to exit): ");
                 scanf("%d", &num_of_processes);
@@ -345,8 +378,38 @@ int main(int argc, char const *argv[]) {
                     printf("\n\tPlease enter a number.\n");
                 }
             } while (num_of_processes < 0);
-            printf("Number of processes: %d", num_of_processes);
-            return 0;
+            printf("\n\tNumber of processes: %d", num_of_processes);
+            printf("\n");
+            processes = (Processes *)calloc(1, sizeof(Processes));
+            for (int i = 0; i < num_of_processes; i++) {
+                printf("\n\tEnter the burst time of Process %d: ", i+1);
+                scanf("%d", &burst_time_entered);
+                printf("\tEnter the arrival time of Process %d: ", i+1);
+                scanf("%d", &arrival_time_entered);
+                Process *process = (Process *)calloc(1, sizeof(Process));
+                if (!process) {
+                    return MEM_ALLOC_FAILED;
+                }
+
+                process->pid = i+1;
+                process->burst_time = burst_time_entered;
+                process->cpu_time = burst_time_entered;
+                process->arrival_time = arrival_time_entered;
+
+                insert_node(processes, process);
+
+                EDRRProcess *edrr_process = (EDRRProcess *)calloc(1, sizeof(EDRRProcess));
+                if (!edrr_process) {
+                    return MEM_ALLOC_FAILED;
+                }
+
+                edrr_process->pid = i+1;
+                edrr_process->burst_time = burst_time_entered;
+                edrr_process->cpu_time = burst_time_entered;
+                edrr_process->arrival_time = arrival_time_entered;
+
+                add_process(&edrr_processes, edrr_process);
+            }
         } else {
             printf("\n\t[i] User pressed '3'. Exiting program...\n\n");
             return 0;
