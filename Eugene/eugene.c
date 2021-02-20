@@ -128,8 +128,8 @@ for(i=0; i < n; i ++){
 
 
 
-	int arr_times[n], process_q[n], burst_times[n], wait_times[n];
-	int process_buffer, ex_buffer;
+	// int arr_times[n], process_q[n], burst_times[n], wait_times[n];
+	// int process_buffer, ex_buffer;
 
 
 	// for(i = 0; i < n; i++){
@@ -246,6 +246,7 @@ for(i=0; i < n; i ++){
 // //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
 	while (timer <= max_arrival_time + max_process_time){
+    printf("ready queue 0: %d", ready_q[0]);
     int ar_buffer = ready_q[0];
 
 		for(i = 0; i < n; i++){
@@ -275,11 +276,12 @@ for(i=0; i < n; i ++){
       }
       else{ //If no new process exist
             
-              process[i].burst_time = process[i].burst_time - 1;
+              
                  if(timer % TQ == 0 && timer > 0){
 
         if(process[ready_q[0]].burst_time == 0){ //Remove from array if burst time = 0; and rearrange
-        
+                printf("Process has finished execution");
+                
         }
           
           printf("\nRearrange processes in ascending order based on burst time"); 
@@ -299,7 +301,7 @@ for(i=0; i < n; i ++){
 
             }
             
-  
+// process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
   }
       
       
@@ -380,8 +382,10 @@ for(i=0; i < n; i ++){
   for(i = 0; i < n; i++){
     printf("\n%d", ready_q[i]);
   }
-  process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
-
+  
+  if(ready_q[0] != 0){ //Check to see if process q is empty
+    process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+  }
 	timer++;
  
   }
