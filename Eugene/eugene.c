@@ -38,7 +38,7 @@ void insert_element(int array[], int new_element, int position, int n){
 }
 
 
-void insert_new(int array[], int n, int element){
+void add_to_rear(int array[], int n, int element){
   for(int i  = 0 ; i < n ; i++){
     if(array[i] == 0){
       array[i] = element;
@@ -107,6 +107,12 @@ for(i = 0; i < n; i++ ) //Getting process inputs
 		}
   	}
 
+int wait_q[n];
+
+
+
+
+
 //Find latest arrival
   max_arrival_time = 0;
 	for(i = 0; i < n; i++){
@@ -119,16 +125,20 @@ for(i = 0; i < n; i++ ) //Getting process inputs
 
 for(i = 0; i < n; i++){
   printf("Process %d \t burst time: %d \t arrival time: %d\n", i+1, process[i].burst_time, process[i].arrival_time);
+  
 }
 
 int ready_q[n];
       //Control variable to check if array is empty
 for(i=0; i < n; i ++){
   ready_q[i] = 0;
-  printf("%d\n", ready_q[i]);
+  printf("\n%d\n", ready_q[i]);
 }
 
-
+for(i=0; i < n; i ++){
+  wait_q[i] = 0;
+  printf("%d\n", ready_q[i]);
+}
 
 	// int arr_times[n], process_q[n], burst_times[n], wait_times[n], ready_q[n];
 	// int process_buffer, ex_buffer;
@@ -240,70 +250,119 @@ for(i=0; i < n; i ++){
 	// 	printf("CP2\n");
 	// }
 
-// #pragma endregions
+#pragma endregions
 
-// //Need a timer to keep track based on the arrival times
+
+
+
+
+// //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
 	while (timer <= max_arrival_time + max_process_time){
 		for(i = 0; i < n; i++){
-			if (timer == process[i].arrival_time){  //If new process arrive
+      int timer_buffer = timer;
+			if (timer == process[i].arrival_time && timer == timer_buffer){  //If >1 processes comes in at t=0 check to see which one has smaller exe time. 
+        add_to_rear(ready_q, n, process[i].process_number);
+        printf("%d",ready_q[0]);
+        //Sort ascending
+        for (int i = 0; i < n; ++i) {
+		        for (int j = i + 1; j < n; ++j) {
+			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+                ready_q[i] !=0 && ready_q[j] !=0){
+				        lmao_buffer = ready_q[i];
+				        ready_q[i] = ready_q[j];
+			          ready_q[j] = lmao_buffer;
+			}
+		}
+	}
+      }
+
+      else if(timer == process[i].arrival_time){ //Since CPU is already allocated after one second, add to rear.
+          add_to_rear(ready_q, n, process[i].process_number);
+          
+      }
+      
       printf("Current process at first position:%d\n", ready_q[0]);
+      printf("Current process at Next position:%d\n", ready_q[1]);
       printf("Current process burst time: %d\n", process[ready_q[0]-1].burst_time);
-          if (ready_q[0] == 0){ //If no new process exist in ready queue
-            	ready_q[0] = process[i].process_number; //Add to front of ready queue
+      }
 
-              printf("\nThis process %d is inserted at %d seconds\n", process[i].process_number, timer);
-              printf("Burst time:%d\n", process[process[i].process_number -1].burst_time);
-          }
+      if(timer == TQ){
+          
+          printf("Rearrange processes in ascending order based on burst time"); 
+                for (int i = 0; i < n; ++i) {
+		                for (int j = i + 1; j < n; ++j) {
+			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+                ready_q[i] !=0 && ready_q[j] !=0){
+				        lmao_buffer = ready_q[i];
+				        ready_q[i] = ready_q[j];
+			          ready_q[j] = lmao_buffer;
+			}
+		}
+	}
+
         
-          else { //Compare exe time of process with the process in the queue from front to rear
-                printf("Process number waiting: %d\n", process[i].process_number); 
-           
-                for(j = 0; j < n; j++){
-                  if(process[i].burst_time < process[ready_q[j]-1].burst_time){
+      
+    }
 
-                  insert_element(ready_q, process[i].process_number, j , n);
+
+          // if (ready_q[0] == 0){ //If no new process exist in ready queue
+          //   	ready_q[0] = process[i].process_number; //Add to front of ready queue
+
+          //     printf("\nThis process %d is inserted at %d seconds\n", process[i].process_number, timer);
+          //     printf("Burst time:%d\n", process[process[i].process_number -1].burst_time);
+          // }
+        
+          // else { //Compare exe time of process with the process in the queue from front to rear
+          //       printf("Process number waiting: %d\n", process[i].process_number); 
+               
+          //       for(j = 0; j < n; j++){
+          //         if(process[i].burst_time < process[ready_q[j]-1].burst_time){ 
+                  
+
+
+          //         insert_element(ready_q, process[i].process_number, j+1 , n);
                  
 
+          //         break;
+          //         }
+          //         else if (process[i].burst_time > process[ready_q[j]-1].burst_time &&
+          //         process[i].burst_time < process[ready_q[n-1]-1].burst_time){
+          //             continue;
+          //         }
 
-                  break;
-                  }
-                  else if (process[i].burst_time > process[ready_q[j]-1].burst_time &&
-                  process[i].burst_time < process[ready_q[n-1]-1].burst_time){
-                      continue;
-                  }
 
-
-                  else //Insert to the rear
-                  {
-                    printf("Process %d should be inserted to the rear", process[i].process_number);
+          //         else //Insert to the rear
+          //         {
+          //           printf("Process %d should be inserted to the rear", process[i].process_number);
               
-                    // printf("Bigger process time should come here");
-                    // printf("Curent ready queue first position%d", ready_q[0]);
-                    //insert_new(ready_q, n, process[i].process_number);
-                    }
-                  }
+          //           // printf("Bigger process time should come here");
+          //           // printf("Curent ready queue first position%d", ready_q[0]);
+          //           //  insert_new(ready_q, n, process[i].process_number);
+          //           }
+          //         }
          
-                }
+          //       }
               
                
-           }
+         
             
            
         //    else if(ready_q[0] != 0){ //Process exist
         //    printf("Process alr exist");
         //       if(process[ready_q[0]-1].burst_time <= TQ){
-        //          process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
-            
-                 
+        //          process[ready_q[0]-1].burst_time = 0;
         //       }
-        //        process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
-        //        printf("Process %d remaining time %d", process[ready_q[0]-1].process_number, process[ready_q[0]-1].burst_time);
+        //       else{
+        //         process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+        //       }
+        // //        process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+        // //        printf("Process %d remaining time %d", process[ready_q[0]-1].process_number, process[ready_q[0]-1].burst_time);
         // }
   
       
-	}
-   printf("\nReady queue first position:%d\n", ready_q[0]);
+
+  
             // if(process[ready_q[0]-1].burst_time == process[ready_q[0]-1].burst_time - TQ){ //Allocate CPU based on TQ and check if its exceeds.
             //           shift_left(ready_q,n);
   for(i = 0;i <n;i ++){
