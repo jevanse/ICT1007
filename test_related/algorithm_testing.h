@@ -12,6 +12,7 @@ typedef struct process {
     int arrival_time;
     int waiting_time;
     int turnaround_time;
+    int response_time;
     int priority;
     struct process *next;
 } Process;
