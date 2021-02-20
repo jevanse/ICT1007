@@ -505,11 +505,11 @@ int main(int argc, char const *argv[]) {
 
     edrr_processes = edrr_processes_head;
 
-    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\n");
-    printf("\t-----------\t------------\t----------\t------------\t----------------\n");
+    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\tResponse time\n");
+    printf("\t-----------\t------------\t----------\t------------\t----------------\t-------------\n");
 
     while (edrr_processes) {
-        printf("\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", edrr_processes->pid, edrr_processes->arrival_time, edrr_processes->cpu_time, edrr_processes->waiting_time, edrr_processes->turnaround_time);
+        printf("\t%-11d\t%-12d\t%-10d\t%-12d\t%-16d\t%-13d\n", edrr_processes->pid, edrr_processes->arrival_time, edrr_processes->cpu_time, edrr_processes->waiting_time, edrr_processes->turnaround_time, edrr_processes->response_time);
         edrr_processes = edrr_processes->next;
     }
 
@@ -520,11 +520,12 @@ int main(int argc, char const *argv[]) {
 
     copy_list_back(&process, edrr_processes);
 
-    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\n");
-    printf("\t-----------\t------------\t----------\t------------\t----------------\n");
+    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\tResponse time\n");
+    printf("\t-----------\t------------\t----------\t------------\t----------------\t-------------\n");
 
     while (process) {
-        printf("\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", process->pid, process->arrival_time, process->cpu_time, process->waiting_time, process->turnaround_time);
+        // Original format string: "\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t\t%d\n"
+        printf("\t%-11d\t%-12d\t%-10d\t%-12d\t%-16d\t%-13d\n", process->pid, process->arrival_time, process->cpu_time, process->waiting_time, process->turnaround_time, process->response_time);
         process = process->next;
     }
 
