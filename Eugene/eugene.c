@@ -107,12 +107,6 @@ for(i = 0; i < n; i++ ) //Getting process inputs
 		}
   	}
 
-int wait_q[n];
-
-
-
-
-
 //Find latest arrival
   max_arrival_time = 0;
 	for(i = 0; i < n; i++){
@@ -259,11 +253,16 @@ for(i=0; i < n; i ++){
 // //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
 	while (timer <= max_arrival_time + max_process_time){
+    int ar_buffer = ready_q[0];
+    printf("\nAr buffer %d", ar_buffer);
+  
 		for(i = 0; i < n; i++){
-      int timer_buffer = timer;
-			if (timer == process[i].arrival_time && timer == timer_buffer){  //If >1 processes comes in at t=0 check to see which one has smaller exe time. 
+			if (timer == process[i].arrival_time && process[i].arrival_time == process[i-1].arrival_time && i != 0
+      && ar_buffer == 0){  //If >1 processes comes in at t=0 check to see which one has smaller exe time. 
         add_to_rear(ready_q, n, process[i].process_number);
-        printf("%d",ready_q[0]);
+        printf("First process arrival time %d\n", process[i].arrival_time);
+        printf("Comparing process arrival time %d \n",process[i-1].arrival_time);
+        printf("First process should not be here");
         //Sort ascending
         for (int i = 0; i < n; ++i) {
 		        for (int j = i + 1; j < n; ++j) {
@@ -272,12 +271,13 @@ for(i=0; i < n; i ++){
 				        lmao_buffer = ready_q[i];
 				        ready_q[i] = ready_q[j];
 			          ready_q[j] = lmao_buffer;
-			}
-		}
-	}
+			          }
+		          }
+	          }
       }
 
       else if(timer == process[i].arrival_time){ //Since CPU is already allocated after one second, add to rear.
+          printf("Should be added to the rear");
           add_to_rear(ready_q, n, process[i].process_number);
           
       }
@@ -285,9 +285,10 @@ for(i=0; i < n; i ++){
       printf("Current process at first position:%d\n", ready_q[0]);
       printf("Current process at Next position:%d\n", ready_q[1]);
       printf("Current process burst time: %d\n", process[ready_q[0]-1].burst_time);
+      printf("Time which process should be rearraged: %d\n", process[ready_q[0]-1].burst_time - TQ);
       }
 
-      if(timer == TQ){
+      if(process[ready_q[0]-1].burst_time == process[ready_q[0]-1].burst_time - TQ){
           
           printf("Rearrange processes in ascending order based on burst time"); 
                 for (int i = 0; i < n; ++i) {
@@ -365,10 +366,11 @@ for(i=0; i < n; i ++){
   
             // if(process[ready_q[0]-1].burst_time == process[ready_q[0]-1].burst_time - TQ){ //Allocate CPU based on TQ and check if its exceeds.
             //           shift_left(ready_q,n);
-  for(i = 0;i <n;i ++){
+  for(i = 0; i < n; i++){
     printf("%d", ready_q[i]);
   }
-                    
+  process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+
 	timer++;
   printf("\nCurrent time %d\n", timer);
   }
