@@ -11,9 +11,6 @@ typedef struct process{
 
 } Process;
 
-void compare_burst_times(){
-
-}
 
 
 
@@ -129,13 +126,10 @@ for(i=0; i < n; i ++){
   printf("\n%d\n", ready_q[i]);
 }
 
-for(i=0; i < n; i ++){
-  wait_q[i] = 0;
-  printf("%d\n", ready_q[i]);
-}
 
-	// int arr_times[n], process_q[n], burst_times[n], wait_times[n], ready_q[n];
-	// int process_buffer, ex_buffer;
+
+	int arr_times[n], process_q[n], burst_times[n], wait_times[n];
+	int process_buffer, ex_buffer;
 
 
 	// for(i = 0; i < n; i++){
@@ -249,15 +243,13 @@ for(i=0; i < n; i ++){
 
 
 
-
 // //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
 	while (timer <= max_arrival_time + max_process_time){
     int ar_buffer = ready_q[0];
-    printf("\nAr buffer %d", ar_buffer);
-  
+
 		for(i = 0; i < n; i++){
-			if (timer == process[i].arrival_time && process[i].arrival_time == process[i-1].arrival_time && i != 0
+			if (timer == process[i].arrival_time && process[i].arrival_time == process[i-1].arrival_time && i > 0
       && ar_buffer == 0){  //If >1 processes comes in at t=0 check to see which one has smaller exe time. 
         add_to_rear(ready_q, n, process[i].process_number);
         printf("First process arrival time %d\n", process[i].arrival_time);
@@ -281,16 +273,18 @@ for(i=0; i < n; i ++){
           add_to_rear(ready_q, n, process[i].process_number);
           
       }
-      
-      printf("Current process at first position:%d\n", ready_q[0]);
-      printf("Current process at Next position:%d\n", ready_q[1]);
-      printf("Current process burst time: %d\n", process[ready_q[0]-1].burst_time);
-      printf("Time which process should be rearraged: %d\n", process[ready_q[0]-1].burst_time - TQ);
-      }
+      else{ //If no new process exist
+            
+              process[i].burst_time = process[i].burst_time - 1;
+                 if(timer % TQ == 0 && timer > 0){
 
-      if(process[ready_q[0]-1].burst_time == process[ready_q[0]-1].burst_time - TQ){
+        if(process[ready_q[0]].burst_time == 0){ //Remove from array if burst time = 0; and rearrange
+        
+        }
           
-          printf("Rearrange processes in ascending order based on burst time"); 
+          printf("\nRearrange processes in ascending order based on burst time"); 
+          printf("\nBurst time for process %d in ready queue: %d", process[ready_q[i]].process_number, process[ready_q[i]].burst_time);
+    
                 for (int i = 0; i < n; ++i) {
 		                for (int j = i + 1; j < n; ++j) {
 			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
@@ -301,10 +295,23 @@ for(i=0; i < n; i ++){
 			}
 		}
 	}
+    }
 
+            }
+            
+  
+  }
+      
+      
+
+    //Remove process from ready q array if burst time = 0;
+  
+
+
+ 
         
       
-    }
+    
 
 
           // if (ready_q[0] == 0){ //If no new process exist in ready queue
@@ -366,17 +373,20 @@ for(i=0; i < n; i ++){
   
             // if(process[ready_q[0]-1].burst_time == process[ready_q[0]-1].burst_time - TQ){ //Allocate CPU based on TQ and check if its exceeds.
             //           shift_left(ready_q,n);
+  printf("\nCurrent time %d\n", timer);
+  int burst_time_buffer = process[ready_q[0]-1].burst_time;
+
+  printf("\nReady Queue:");
   for(i = 0; i < n; i++){
-    printf("%d", ready_q[i]);
+    printf("\n%d", ready_q[i]);
   }
   process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
 
 	timer++;
-  printf("\nCurrent time %d\n", timer);
+ 
   }
-  
-  
-  }
+}
+ 
 
         //   if (process[i].burst_time <= TQ && process[i].burst_time == timer){
         //     process[i].burst_time = 0;
@@ -385,11 +395,6 @@ for(i=0; i < n; i ++){
           
          
 
-        //   else{
-            
-        //       process[i].burst_time = process[i].burst_time - 1;
-        //     }
-            
         //   printf("time left for process %d: %d", process[i].process_number, process[i].burst_time);
         // }
 
