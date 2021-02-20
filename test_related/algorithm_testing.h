@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define FILE_READ_FAILED -1
+#define MEM_ALLOC_FAILED -2
+
 typedef struct process {
     int pid;
     int burst_time;
@@ -9,6 +12,7 @@ typedef struct process {
     int arrival_time;
     int waiting_time;
     int turnaround_time;
+    int response_time;
     int priority;
     struct process *next;
 } Process;
