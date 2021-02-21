@@ -1,20 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "paper_5.h"
+#include "helper.h"
 /*
 Todo: 
-	1) Copy from processes to own struct, as I require more variables
-	2) Update generate time quantum function
+	1) Copy from processes to own struct, as I require more variables - done
+	2) Update generate time quantum function - done
 	3) Account for edge case where there is a period of idling between processes
-		-> If no processes are in queue, check for next earliest arrival time and set time elapsed to that
-
+		-> If no processes are in queue, check for next earliest arrival time and set time elapsed to that - done
+	4) Check all processes in ready queue and see if their remaining burst time = 20% * TQ, if they are, execute them first
+	5) Test cases when theres idle time
 
 */
-#define LOW_PRIORITY 1
-#define MED_PRIORITY 2
-#define HIGH_PRIORITY 3
-
 
 int main(void) {
   // higher priority value denotes higher priority
@@ -22,9 +19,10 @@ int main(void) {
 	init(processes);
 	Process * current = processes->head;
 
-	int quantum = generate_time_quantum(processes); //generated time quantum can be int for now
-	printf("Quantum Generated: %d\n", quantum);
-	improved_round_robin(processes, quantum);
+	//int quantum = generate_time_quantum(processes); //generated time quantum can be int for now
+	//printf("Quantum Generated: %d\n", quantum);
+	
+	improved_round_robin(processes, 0);
 
 	current = processes->head;
 	while (current != NULL)
@@ -39,233 +37,100 @@ int main(void) {
 
 int improved_round_robin(Processes * processes, int quantum)
 {
-	Process * current = processes->head;
-	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum, queue_front = -1, queue_rear = -1, queue_size = 20, i;
-	bool done;
-	Process * process_queue = init_queue(queue_size);
-
-	/* Add processes that arrive at time 0 to the queue */
-	while (current != NULL)
+	
+	//Process * current = processes->head;
+	irr_process * current = (irr_process* )malloc(sizeof(irr_process));
+	irr_process * tmp = (irr_process* )malloc(sizeof(irr_process));
+	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum, queue_front = -1, queue_rear = -1, queue_size = 20, i, number_of_completed_processes = 0;
+	irr_process * process_queue = init_queue(queue_size);
+	irr_process * head = init_irr_processes(processes->head, 500, processes->size);
+	generate_time_quantum(head, 500);
+	
+	while (number_of_completed_processes != processes->size)
 	{
-		
-		if (current->arrival_time == 0) 
+		//check processes
+		for (i = queue_front; i <= queue_rear; i++) //iterate through each item in the queue
 		{
-			//printf("Current pid: %d, arrival time: %d\n", current->pid, current->arrival_time);
-			enqueue(current, process_queue, &queue_front, &queue_rear, queue_size);
-
-		}
-		current = current->next;
-	}
-
-	for(;;)
-	{
-		done = true;
-		for (i = queue_front; i <= queue_rear; i++) 
-		{
+			print_processes_in_queue(process_queue, queue_front, queue_rear);
+			time_quantum = 0; // reset on every loop as it is dynamic
 			time_at_start_of_quantum = time_elapsed;
-			current = dequeue(process_queue, &queue_front, &queue_rear);
-			//TODO: Check for processes to be run here, if queue is empty, skip to next arrival time.
-			//	Implementation: Sort by arrival time, to find next biggest arrival time 
-			if (current == NULL) continue;
-			time_quantum = quantum; //quantum should always reset'
-			if (current->burst_time < time_quantum) time_quantum = current->burst_time;
-			if (current->burst_time < quantum * 1.2 && (current->priority == LOW_PRIORITY || current->priority == MED_PRIORITY))
-			{
-				//don't overwrite the quantum passed in
-				time_quantum = current->burst_time;
-			}
-			else if (current->burst_time < quantum * 1.3 && current->priority == HIGH_PRIORITY)
-			{
-				time_quantum = current->burst_time;
-			}
-			time_elapsed += time_quantum;
-			current->burst_time -= time_quantum;
-			if (current->burst_time <= 0)
-			{
-				current->burst_time = 0;
-				current->turnaround_time = time_elapsed - current->arrival_time;
-				current->waiting_time = current->turnaround_time - current->cpu_time;
-				Process * exiting_process = processes->head;
 
-				while (exiting_process != NULL)
+			//TODO 4: checking function should be here to move the selected node to the front
+
+			current = dequeue(process_queue, &queue_front, &queue_rear);
+			if (current == NULL)
+				printf("Current is NULL\n");
+
+			if (current == NULL && number_of_completed_processes != processes->size)  
 				{
-					if (exiting_process->pid == current->pid)
-					{
-						exiting_process->turnaround_time = current->turnaround_time;
-						exiting_process->waiting_time = current->waiting_time;
-						break;
-					}
-					exiting_process = exiting_process->next;
+					add_arriving_process(head, process_queue, &time_elapsed, &queue_front, &queue_rear, queue_size);
+					continue;
 				}
-				//printf("P%d exiting, tat->%d, wt->%d\n", current->pid, current->turnaround_time, current->waiting_time);
+
+			if (current->burst_time < current->time_quantum) 
+				time_quantum = current->burst_time;
+
+			else if (current->burst_time > current->time_quantum && 
+					current->burst_time < current->time_quantum * 1.2 &&
+					(current->priority == LOW_PRIORITY || current->priority == MED_PRIORITY))
+				time_quantum = current->burst_time;
+
+			else if (current->burst_time > current->time_quantum && 
+					current->burst_time < quantum * 1.3 &&
+					current->priority == HIGH_PRIORITY)
+				time_quantum = current->burst_time;
+			else 
+				time_quantum = current->time_quantum;
+			
+			time_elapsed += time_quantum;
+			printf("Time elapsed: %d\n", time_elapsed);
+			current->burst_time -= time_quantum;
+
+			if (current->burst_time <= 0) // technically remaining burst_time can only go down to 0, this is to catch edge cases I guess
+			{
+				set_completed_process_properties(processes->head, current, time_elapsed);
+				number_of_completed_processes++;
+				printf("P%d exiting, tat->%d, wt->%d\n", current->pid, current->turnaround_time, current->waiting_time);
 			}
-			//check for other processes that may have arrived
-			Process * arriving_process = processes->head;
+			//check for other processes that may have arrived during execution of current process
+
+			irr_process * arriving_process = head;
 			while (arriving_process != NULL)
 			{
 				if (arriving_process->arrival_time <= time_elapsed && arriving_process->arrival_time > time_at_start_of_quantum)
 				{		
-					if (arriving_process->arrival_time <= time_elapsed) //assume for now that arrival times are sorted
-					{
-						//add these to the queue first as they arrive before the current time			
-						enqueue(arriving_process, process_queue, &queue_front, &queue_rear, queue_size);
-					}
+					enqueue(arriving_process, process_queue, &queue_front, &queue_rear, queue_size);
 				}
 				arriving_process = arriving_process->next;
 			}
+
 			if (current->burst_time > 0) // "short" remaining burst time has already been checked hence it is ok to assume these will run
 			{
 				//re-add to queue
 				enqueue(current, process_queue, &queue_front, &queue_rear, queue_size);
 			}
-			done = check_process_execution(processes); //will be set to false if there is still burst time remaining
-			//print_processes_in_queue(process_queue, queue_front, queue_rear);
+			
+			print_processes_in_queue(process_queue, queue_front, queue_rear);
+
 		}
-		if (done == true) break;
 	}
-	return 0;
+	 return 0;
 }
 
-Process * init_queue(int queue_size)
-{
-	return (Process *) calloc(1, sizeof(Process) * queue_size);
-}
 
-void enqueue(Process * process, Process * process_queue, int * front, int * rear, int queue_size)
-{
-	if (*rear == queue_size - 1) printf("Queue is full\n");
-	else 
-	{
-		if (*front == -1) *front = 0;
-		*rear = *rear + 1;
-		process_queue[*rear] = *process;
-	}
-}
-
-Process * dequeue(Process * process_queue, int * front, int * rear)
-{
-	Process * tmp = (Process *) malloc(sizeof(Process));
-	if (*front == -1) 
-	{
-		printf("Dequeue: Queue is empty\n");
-		return NULL;
-	}
-	else
-	{
-		tmp = &process_queue[*front];
-		*front = *front + 1;
-		if (*front > *rear) *front = *rear = - 1;
-	}
-	return tmp;
-}
-
-void swap(Process *xp, Process *yp)  
-{  
-    Process temp = *xp;  
-    *xp = *yp;  
-    *yp = temp;  
-}  
-  
-// A function to implement bubble sort  
-void bubbleSort(Process arr[], int n)  
-{  
-    int i, j;  
-    for (i = 0; i < n-1; i++)      
-      
-    // Last i elements are already in place  
-    for (j = 0; j < n-i-1; j++)  
-        if (arr[j].burst_time > arr[j+1].burst_time)  
-            swap(&arr[j], &arr[j+1]);  
-}  
-
-
-int init(Processes * processes) //function for testing
-{
-	init_processes(processes);
-    
-    Process *process_1 = (Process*) calloc(1,(sizeof(Process)));
-    Process *process_2 = (Process*) calloc(1,(sizeof(Process)));
-    Process *process_3 = (Process*) calloc(1,(sizeof(Process)));
-    Process *process_4 = (Process*) calloc(1,(sizeof(Process)));
-
-    process_1->arrival_time = 0;
-		process_1->pid = 1;
-		process_1->burst_time = 40;
-		process_1->cpu_time = process_1->burst_time;
-		process_1->priority = 3;
-        
-		process_2->arrival_time = 0;
-		process_2->pid = 2;
-		process_2->burst_time = 35;
-		process_2->cpu_time = process_2->burst_time;
-		process_2->priority = 2;
-
-		process_3->arrival_time = 40;
-		process_3->pid = 3;
-		process_3->burst_time = 30;
-		process_3->priority = 1;
-		process_3->cpu_time = process_3->burst_time;
-
-		process_4->arrival_time = 0;
-		process_4->pid = 4;
-		process_4->burst_time = 100;
-		process_4->cpu_time = process_4->burst_time;
-		process_4->priority = 3;
-
-    insert_node(processes, process_1);
-    insert_node(processes, process_2);
-    insert_node(processes, process_3);
-    insert_node(processes, process_4);
-		return 0;
-}
-
-int generate_time_quantum(Processes * processes)
-{
-	int i = 0;
-	int quantum = 0;
-	Process * temp_copy = (Process *) malloc(sizeof(Process) * processes->size);
-	Process * current = processes->head;
-	
-	while (current != NULL) //make a copy of the linked list
-	{
-		memcpy(&temp_copy[i++], current, sizeof(Process));
-		current = current->next;
-	}
-	bubbleSort(temp_copy, processes->size);
-	// find the median
-	if (processes->size % 2 == 0)
-	{
-		quantum = (int) (temp_copy[processes->size /2 - 1].burst_time + temp_copy[processes->size /2].burst_time) / 2;
-	}
-	else
-	{
-		quantum = (int) temp_copy[processes->size /2].burst_time;
-	}
-
-	free(temp_copy);
-	free(current);
-	return quantum;
-}
-
-bool check_process_execution(Processes * processes)
-{
-	Process * current = processes->head;
-
-	while (current != NULL)
-	{
-		if (current->burst_time > 0) return false;
-		current = current->next;
-	}
-	return true;
-}
-
-void print_processes_in_queue(Process * process_queue, int front, int rear)//debugging function
-{
-	printf("\nQueue: ");
-	for (int i = front; i <= rear; i++)
-	{
-		printf("\tProcess %d ", process_queue[i].pid);
-	}
-	printf("\n\n");
-
-}
+// int logic()
+// {
+// 				Process * arriving_process = processes->head;
+// 			while (arriving_process != NULL)
+// 			{
+// 				if (arriving_process->arrival_time <= time_elapsed && arriving_process->arrival_time > time_at_start_of_quantum)
+// 				{		
+// 					if (arriving_process->arrival_time <= time_elapsed) //assume for now that arrival times are sorted
+// 					{
+// 						//add these to the queue first as they arrive before the current time			
+// 						enqueue(arriving_process, process_queue, &queue_front, &queue_rear, queue_size);
+// 					}
+// 				}
+// 				arriving_process = arriving_process->next;
+// 			}
+// }
