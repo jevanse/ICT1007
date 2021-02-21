@@ -246,18 +246,26 @@ for(i = 0; i < n; i ++){
 
        if(process[ready_q[0]-1].burst_time == 0){ //at any point check if process has finished execution
                 printf("Process has finished execution please rearrange");
+                //Rearange and print out before removing
+                            for (int i = 0; i < n; ++i) {
+		            for (int j = i + 1; j < n; ++j) {
+			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+                ready_q[i] !=0 && ready_q[j] !=0){
+				        lmao_buffer = ready_q[i];
+				        ready_q[i] = ready_q[j];
+			          ready_q[j] = lmao_buffer;
+			}
+		}
+	}
+    printf("\nReady Queue:");
+  for(i = 0; i < n; i++){
+ 
+    printf("\n%d", ready_q[i]);
+  }
+
                 remove_element(ready_q, 0 ,n);
-  //               process[ready_q[0]-1].pro = 0; //Emptying out the first element
-  //             for (int i = 0; i < n; ++i) {
-	// 	            for (int j = i + 1; j < n; ++j) {
-	// 		          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
-  //               ready_q[i] !=0 && ready_q[j] !=0){
-	// 			        lmao_buffer = ready_q[i];
-	// 			        ready_q[i] = ready_q[j];
-	// 		          ready_q[j] = lmao_buffer;
-	// 		}
-	// 	}
-	// }
+ 
+ 
 
 
         }
@@ -279,6 +287,12 @@ for(i = 0; i < n; i ++){
 			}
 		}
 	}
+      printf("\nReady Queue:");
+  for(i = 0; i < n; i++){
+ 
+    printf("\n%d", ready_q[i]);
+  }
+
     }
       
   //     else{ //If no new process exist
