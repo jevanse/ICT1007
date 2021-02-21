@@ -398,12 +398,7 @@ for(i = 0; i < n; i ++){
             //           shift_left(ready_q,n);
 
 
-  printf("\nReady Queue:");
-  for(i = 0; i < n; i++){
- 
-    printf("\n%d", ready_q[i]);
-  }
-  
+
  
 	timer++;
  
