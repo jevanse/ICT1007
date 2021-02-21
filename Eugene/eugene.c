@@ -49,8 +49,13 @@ void add_to_rear(int array[], int n, int element){
 }
 }
 
-void sum_of_elements(int array[]){
-
+int sum_of_elements(int array[], int array_size){
+  int sum;
+  for(int i =0; i < array_size; i++)
+    {
+        sum = sum + array[i];
+    }
+    return sum;
 }
 
 
@@ -70,7 +75,7 @@ void ascending(int array[], int number){
 
 int main(void) {
 	// Main program
-  	int i, j, n, et_buffer, loop,tat[10], TQ, ct[10], max_process_time, response_times[10], max_arrival_time, size_t, lmao_buffer;
+  	int i, j, n, et_buffer, loop,tat[10], TQ, ct[10], max_process_time, response_times[10], max_arrival_time, size_t, lmao_buffer, total_burst_time;
   	float awt = 0.0, att=0.0, art=0.0;
 
 
@@ -131,57 +136,6 @@ for(i=0; i < n; i ++){
 }
 
 
-
-	// int arr_times[n], process_q[n], burst_times[n], wait_times[n];
-	// int process_buffer, ex_buffer;
-
-
-	// for(i = 0; i < n; i++){
-  // 		printf("\nEnter Execution Time for process %d: ",i + 1);
-  // 		scanf("%d", &burst_times[i]); //Storing burst times into the burst time array
-	// }
-
-	// for(i = 0; i < n; i++){
-  // 		printf("\nEnter Arrival Time for process %d: ",i + 1);
-  // 		scanf("%d", &arr_times[i]); //Storing arrival times into the burst time array
-	// }
-
-
-  
-
-	//Sorting processes based on arrival time (ascending order)
-
-	//This is only the initial arrangement
-	// for(i = 0; i< n; i++){ //populating the queue with processes
-  //   	process_q[i] = i+1;
-  //   	//printf("Process: %d", process_q[i]);
-	// }
-
-	// // Arrange burst time based on arr time
-	// for (i = 0; i < n; ++i) {
-  // 		for (j = i + 1; j < n; ++j) {
-	// 		if (arr_times[i] > arr_times[j]){
-	// 		et_buffer =  arr_times[i];
-	// 		arr_times[i] = arr_times[j];
-	// 		arr_times[j] = et_buffer;
-
-	// 		process_buffer = process_q[i]; //Inital arrangement based on arrival time
-	// 		process_q[i] = process_q[j];
-	// 		process_q[j] = process_buffer;
-
-	// 		ex_buffer = burst_times[i];
-	// 		burst_times[i] = burst_times[j];
-	// 		burst_times[j] = ex_buffer;
-	// 		}
-  // 		}
-	// }
-// // NEED to arrange based on shortest remaining time left after first process is allocated
-
-// for(i=1;i<n;i++) //Finding the biggest process time among the processes
-//   {
-//     if(max_process_time<exe_times[i])
-//       max_process_time=exe_times[i];
-//   }
 
 #pragma region Eugene code
 	// int ts = 0;	//Initialize timestamp to 0
@@ -244,13 +198,20 @@ for(i=0; i < n; i ++){
 
 #pragma endregions
 
+//Calculate total burst time
+for(i = 0; i < n; i ++){
+   total_burst_time += process[i].burst_time;
+   printf("Total process time needed: %d", total_burst_time);
+}
+
+
 
 
 
 // //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
 
-	while (timer <= max_arrival_time + max_process_time){
+	while (timer <= total_burst_time){
     printf("\nCurrent time %d\n", timer);
     if(ready_q[0] != 0){ //Check to see if process q is empty
     process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
