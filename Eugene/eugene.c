@@ -11,7 +11,12 @@ typedef struct process{
 
 } Process;
 
-
+void remove_element(int array[] , int index, int array_length)
+{
+   int i;
+   for(i = index; i < array_length - 1; i++) array[i] = array[i + 1];
+   array[array_length-1] = 0;
+}
 
 
 void shift_left(int array[], int n){
@@ -44,8 +49,7 @@ void add_to_rear(int array[], int n, int element){
 }
 }
 
-
-void shift_right(){
+void sum_of_elements(int array[]){
 
 }
 
@@ -245,8 +249,12 @@ for(i=0; i < n; i ++){
 
 // //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
+
 	while (timer <= max_arrival_time + max_process_time){
-    printf("ready queue 0: %d", ready_q[0]);
+    printf("\nCurrent time %d\n", timer);
+    if(ready_q[0] != 0){ //Check to see if process q is empty
+    process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
+    }
     int ar_buffer = ready_q[0];
 
 		for(i = 0; i < n; i++){
@@ -274,18 +282,31 @@ for(i=0; i < n; i ++){
           add_to_rear(ready_q, n, process[i].process_number);
           
       }
-      else{ //If no new process exist
-            
-              
-                 if(timer % TQ == 0 && timer > 0){
 
-        if(process[ready_q[0]].burst_time == 0){ //Remove from array if burst time = 0; and rearrange
-                printf("Process has finished execution");
-                
+       if(process[ready_q[0]-1].burst_time == 0){ //at any point check if process has finished execution
+                printf("Process has finished execution please rearrange");
+                remove_element(ready_q, 0 ,n);
+  //               process[ready_q[0]-1].pro = 0; //Emptying out the first element
+  //             for (int i = 0; i < n; ++i) {
+	// 	            for (int j = i + 1; j < n; ++j) {
+	// 		          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+  //               ready_q[i] !=0 && ready_q[j] !=0){
+	// 			        lmao_buffer = ready_q[i];
+	// 			        ready_q[i] = ready_q[j];
+	// 		          ready_q[j] = lmao_buffer;
+	// 		}
+	// 	}
+	// }
+
+
         }
-          
-          printf("\nRearrange processes in ascending order based on burst time"); 
-          printf("\nBurst time for process %d in ready queue: %d", process[ready_q[i]].process_number, process[ready_q[i]].burst_time);
+
+
+      if(timer % TQ == 0 && timer > 0){
+        
+        
+          printf("\nRearrange processes in ascending order based on burst time but front has not finished execution"); 
+          printf("\nBurst time left for process : %d", process[ready_q[0]-1].burst_time);
     
                 for (int i = 0; i < n; ++i) {
 		                for (int j = i + 1; j < n; ++j) {
@@ -298,8 +319,33 @@ for(i=0; i < n; i ++){
 		}
 	}
     }
+      
+  //     else{ //If no new process exist
+            
+              
+  //       if(timer % TQ == 0 && timer > 0){
 
-            }
+  //       if(process[ready_q[0]].burst_time == 0){ //Remove from array if burst time = 0; and rearrange
+  //               printf("Process has finished execution");
+
+  //       }
+          
+  //         printf("\nRearrange processes in ascending order based on burst time"); 
+  //         printf("\nBurst time for process %d in ready queue: %d", process[ready_q[i]].process_number, process[ready_q[i]].burst_time);
+    
+  //               for (int i = 0; i < n; ++i) {
+	// 	                for (int j = i + 1; j < n; ++j) {
+	// 		          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+  //               ready_q[i] !=0 && ready_q[j] !=0){
+	// 			        lmao_buffer = ready_q[i];
+	// 			        ready_q[i] = ready_q[j];
+	// 		          ready_q[j] = lmao_buffer;
+	// 		}
+	// 	}
+	// }
+  //   }
+
+  //           }
             
 // process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
   }
@@ -375,17 +421,15 @@ for(i=0; i < n; i ++){
   
             // if(process[ready_q[0]-1].burst_time == process[ready_q[0]-1].burst_time - TQ){ //Allocate CPU based on TQ and check if its exceeds.
             //           shift_left(ready_q,n);
-  printf("\nCurrent time %d\n", timer);
-  int burst_time_buffer = process[ready_q[0]-1].burst_time;
+
 
   printf("\nReady Queue:");
   for(i = 0; i < n; i++){
+ 
     printf("\n%d", ready_q[i]);
   }
   
-  if(ready_q[0] != 0){ //Check to see if process q is empty
-    process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
-  }
+ 
 	timer++;
  
   }
