@@ -213,6 +213,11 @@ for(i = 0; i < n; i ++){
 
 	while (timer <= total_burst_time){
     printf("\nCurrent time %d\n", timer);
+       printf("\nReady Queue:");
+  for(i = 0; i < n; i++){
+ 
+    printf("\n%d", ready_q[i]);
+  }
     if(ready_q[0] != 0){ //Check to see if process q is empty
     process[ready_q[0]-1].burst_time = process[ready_q[0]-1].burst_time - 1;
     }
@@ -246,6 +251,7 @@ for(i = 0; i < n; i ++){
 
        if(process[ready_q[0]-1].burst_time == 0){ //at any point check if process has finished execution
                 printf("Process has finished execution please rearrange");
+                 remove_element(ready_q, 0 ,n);
                 //Rearange and print out before removing
                             for (int i = 0; i < n; ++i) {
 		            for (int j = i + 1; j < n; ++j) {
@@ -263,22 +269,26 @@ for(i = 0; i < n; i ++){
     printf("\n%d", ready_q[i]);
   }
 
-                remove_element(ready_q, 0 ,n);
- 
  
 
 
         }
 
 
-      if(timer % TQ == 0 && timer > 0){
+    else if(timer % TQ == 0 && timer > 0){
         
-        
-          printf("\nRearrange processes in ascending order based on burst time but front has not finished execution"); 
-          printf("\nBurst time left for process : %d", process[ready_q[0]-1].burst_time);
-    
-                for (int i = 0; i < n; ++i) {
-		                for (int j = i + 1; j < n; ++j) {
+          if(process[ready_q[0]-1].burst_time != 0){
+
+            //Need to check if its the only process left
+            
+              printf("\nRearrange processes in ascending order based on burst time but front has not finished execution");
+
+              shift_left(ready_q, n);
+
+          }
+          //If process finished execution, just rearrage without process
+              for (int i = 0; i < n-1; ++i) {
+		                for (int j = i + 1; j < n-1; ++j) {
 			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
                 ready_q[i] !=0 && ready_q[j] !=0){
 				        lmao_buffer = ready_q[i];
@@ -287,6 +297,11 @@ for(i = 0; i < n; i ++){
 			}
 		}
 	}
+          
+       
+    printf("\nBurst time left for process : %d", process[ready_q[0]-1].burst_time);
+    
+                
       printf("\nReady Queue:");
   for(i = 0; i < n; i++){
  
