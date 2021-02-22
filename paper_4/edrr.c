@@ -31,7 +31,7 @@
 #define TERMINATED 3
 
 #define MAX_FILE_PATH 4096
-#define MAX_NUM_BUF 5
+#define MAX_BUF 512
 
 typedef struct edrr_process {
     int pid;
@@ -444,39 +444,90 @@ int main(int argc, char const *argv[]) {
 
                 if (strncmp(filename, "q", 1) == 0) {
                     printf("\n\t[i] User pressed 'q'. Exiting program...\n\n");
-                    return 0;
+                    return EXIT_SUCCESS;
                 }
                 if (strlen(filename) == 0)
                     printf("\n\t[-] Please enter a valid file path.\n");
             } while(strlen(filename) == 0);
 
-            printf("\n\t[+] You have entered '%s'", filename);
+            printf("\n\t[+] You have entered '%s'.\n", filename);
 
         } else if (user_option == '2') {
 
             // read in params
+            char *num_of_processes_str = NULL;
             int num_of_processes = -1;
             int burst_time_entered = -1, 
                 arrival_time_entered = -1;
             do {
+                num_of_processes_str = (char *)calloc(1, 5 + 2);
                 printf("\n\tEnter the number of processes to be scheduled ('0' to exit): ");
-                scanf("%d", &num_of_processes);
-                if (num_of_processes == 0) {
-                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                    return 0;
+                fgets(num_of_processes_str, 5, stdin);
+
+                if (num_of_processes_str[strlen(num_of_processes_str) - 1] == '\n') {
+                    num_of_processes_str[strlen(num_of_processes_str) - 1] = '\0';
                 }
-                if (num_of_processes == -1) {
-                    printf("\n\tPlease enter a number.\n");
+
+                if (!is_number(num_of_processes_str)) {
+                    printf("\n\t[-] Please enter a number.\n");
                 }
-            } while (num_of_processes < 0);
-            printf("\n\tNumber of processes: %d", num_of_processes);
-            printf("\n");
+            } while (!is_number(num_of_processes_str));
+
+            num_of_processes = atoi(num_of_processes_str);
+            
+            if (num_of_processes == 0) {
+                printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                return EXIT_SUCCESS;
+            }
+            
+            printf("\n\tNumber of processes: %d\n", num_of_processes);
+
+            char *burst_time_str = NULL, *arrival_time_str = NULL;
+            
             processes = (Processes *)calloc(1, sizeof(Processes));
+
             for (int i = 0; i < num_of_processes; i++) {
-                printf("\n\tEnter the burst time of Process %d: ", i+1);
-                scanf("%d", &burst_time_entered);
-                printf("\tEnter the arrival time of Process %d: ", i+1);
-                scanf("%d", &arrival_time_entered);
+                do {
+                    burst_time_str = (char *)calloc(1, 5 + 2);
+                    printf("\n\tEnter the burst time of Process %d ('0' to exit): ", i+1);
+                    fgets(burst_time_str, 5, stdin);
+
+                    if (burst_time_str[strlen(burst_time_str) - 1] == '\n') {
+                        burst_time_str[strlen(burst_time_str) - 1] = '\0';
+                    }
+
+                    if (!is_number(burst_time_str)) {
+                        printf("\n\t[-] Please enter a number.\n");
+                    }
+                } while (!is_number(burst_time_str));
+
+                burst_time_entered = atoi(burst_time_str);
+
+                if (burst_time_entered == 0)  {
+                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                    return EXIT_SUCCESS;
+                }
+
+                do {
+                    arrival_time_str = (char *)calloc(1, 5 + 2);
+                    printf("\n\tEnter the arrival time of Process %d ('0' to exit): ", i+1);
+                    fgets(arrival_time_str, 5, stdin);
+
+                    if (arrival_time_str[strlen(arrival_time_str) - 1] == '\n') {
+                        arrival_time_str[strlen(arrival_time_str) - 1] = '\0';
+                    }
+
+                    if (!is_number(arrival_time_str)) {
+                        printf("\n\t[-] Please enter a number.\n");
+                    }
+                } while (!is_number(arrival_time_str));
+
+                arrival_time_entered = atoi(arrival_time_str);
+
+                if (arrival_time_entered == 0)  {
+                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                    return EXIT_SUCCESS;
+                }
                 
                 Process *process = (Process *)calloc(1, sizeof(Process));
                 if (!process) {
@@ -505,9 +556,9 @@ int main(int argc, char const *argv[]) {
             if (user_option == '3') {
                 printf("\n\t[i] User pressed '3'. Exiting program...\n\n");
             } else {
-                printf("\n\t[-] User pressed unknown option ''. Exiting program...\n\n", user_option);
+                printf("\n\t[-] User pressed unknown option '%c'. Exiting program...\n\n", user_option);
             }
-            return 0;
+            return EXIT_SUCCESS;
         }
     }
 
@@ -521,6 +572,13 @@ int main(int argc, char const *argv[]) {
 
         if (get_process_status == FILE_READ_FAILED) {
             printf("\n\t[-] get_process_status: Unable to read %s.\n\n", filename);
+            return EXIT_FAILURE;
+        }
+
+        if (get_process_status == PARSE_FILE_FAILED) {
+            printf("\n\t[-] get_process_status: Unable to parse file.");
+            printf("\n\t[-] get_process_status: Please ensure file is of the correct format.");
+            printf("\n\t[-] get_process_status: Please refer to README.md.\n\n");
             return EXIT_FAILURE;
         }
 
