@@ -111,12 +111,16 @@ int parse_file_contents(const char *file_contents, Processes **processes) {
     init_processes(*processes);
 
     while (line != NULL) {
-        int pid_read;
-        int burst_time_read;
-        int arrival_time_read;
-        int priority_read;
+        int pid_read = -1;
+        int burst_time_read = -1;
+        int arrival_time_read = -1;
+        int priority_read = -1;
 
         sscanf(line, "%d,%d,%d,%d", &pid_read, &burst_time_read, &arrival_time_read, &priority_read);
+
+        if (pid_read == -1 || burst_time_read == -1 || arrival_time_read == -1 || priority_read == -1) {
+            return PARSE_FILE_FAILED;
+        }
 
         Process *process = (Process *)calloc(1, sizeof(Process));
         if (!process) {

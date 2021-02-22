@@ -4,6 +4,7 @@
 
 #define FILE_READ_FAILED -1
 #define MEM_ALLOC_FAILED -2
+#define PARSE_FILE_FAILED -3
 
 typedef struct process {
     int pid;
