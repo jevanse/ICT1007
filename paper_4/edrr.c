@@ -159,7 +159,7 @@ void sort_processes_based_on_arrival_time(EDRRProcess **list) {
     }
 
     while (current) {
-        // Next will keep track of the next process to the current
+        // "next" will keep track of the next process to the current
         next = current->next;
         while (next) {
             // If current's arrival_time is 
