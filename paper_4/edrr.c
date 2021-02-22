@@ -22,6 +22,9 @@
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
+/**
+ * The queue state of processes
+ */
 #define NEW 0
 #define READY 1
 #define WAITING 2
@@ -88,6 +91,11 @@ void update_process_value(int pid, int turnaround_time, int waiting_time, int re
     *processes = head;
 }
 
+/**
+ * Copies back updated values from local list of processes to global one
+ * 
+ * - i.e. convert EDRRProcess* to Process*
+ */
 void copy_list_back(Process **head, EDRRProcess *edrr_head) {
     if (!head || !edrr_head) return;
 
@@ -108,9 +116,9 @@ void copy_list_back(Process **head, EDRRProcess *edrr_head) {
  * Creates a local copy of the list of processes read from file
  * 
  * - The local copy will contain more attributes that are only needed for the local logic
+ * - i.e. convert Process* to EDRRProcess*
  */
 EDRRProcess *copy_list(Process *head) {
-    // Check if head is NULL
     if (!head) {
         return NULL;
     }
@@ -123,8 +131,8 @@ EDRRProcess *copy_list(Process *head) {
     new_process->waiting_time = head->waiting_time;
     new_process->arrival_time = head->arrival_time;
     new_process->turnaround_time = head->turnaround_time;
+    new_process->response_time = head->response_time;
     new_process->priority = head->priority;
-    new_process->queue = NEW;
 
     new_process->next = copy_list(head->next);
 
@@ -242,11 +250,15 @@ int is_number(const char *str) {
 
 // EDRR Implementation related
 
+/**
+ * Gets the minimum arrival time of all new processes in a list
+ */
 int get_minimum_arrival_time(EDRRProcess * process) {
     int minimum_arrival_time = -1;
 
     if (!process) return minimum_arrival_time;
 
+    // Set minimum_arrival_time to the arrival_time of the first new process in list
     while (process) {
         if (process->queue == NEW) {
             minimum_arrival_time = process->arrival_time;
@@ -255,6 +267,9 @@ int get_minimum_arrival_time(EDRRProcess * process) {
         process = process->next;
     }
 
+    // Loop through the processes and check their arrival_time 
+    // against minimum_arrival_time.
+    // Update minimum_arrival_time if necessary.
     while (process) {
         if (process->arrival_time < minimum_arrival_time && 
             process->queue == NEW) {
@@ -266,6 +281,9 @@ int get_minimum_arrival_time(EDRRProcess * process) {
     return minimum_arrival_time;
 }
 
+/**
+ * Gets the maximum burst time of all ready and waiting processes
+ */
 int get_maximum_burst_time(EDRRProcess *process) {
     int max_burst_time = 0;
 
@@ -282,6 +300,18 @@ int get_maximum_burst_time(EDRRProcess *process) {
     return max_burst_time;
 }
 
+/**
+ * Receives a list of processes and "add"s all the new 
+ * processes that has arrived 
+ *  (by checking its arrival_time against time_elapsed)
+ * into ready list
+ * 
+ * Returns a boolean (1 or 0) indicating if any new processes 
+ * were added to ready list of processes
+ * 
+ * When we say "add", it just means to toggle the queue flag of 
+ * processes from NEW to READY
+ */
 int add_to_ready_queue(EDRRProcess **process, int time_elapsed) {
     int added_to_ready_queue = FALSE;
     
@@ -289,7 +319,10 @@ int add_to_ready_queue(EDRRProcess **process, int time_elapsed) {
 
     EDRRProcess *processes_ptr = *process;
     
+    // Loop through processes
     while(*process) {
+        // if a new process has arrived,
+        // "add" it to ready queue
         if ((*process)->arrival_time <= time_elapsed &&
             (*process)->queue == NEW) {
             added_to_ready_queue = TRUE;
@@ -303,6 +336,10 @@ int add_to_ready_queue(EDRRProcess **process, int time_elapsed) {
     return added_to_ready_queue;
 }
 
+/**
+ * Returns a boolean indicating if there are processes 
+ * in the ready queue
+ */
 int there_are_processes_ready(EDRRProcess *process) {
     if (!process) return FALSE;
 
@@ -316,6 +353,10 @@ int there_are_processes_ready(EDRRProcess *process) {
     return FALSE;
 }
 
+/**
+ * Returns a boolean indicating if there are processes 
+ * in the waiting queue
+ */
 int there_are_processes_waiting(EDRRProcess *process) {
     if (!process) return FALSE;
 
@@ -329,6 +370,10 @@ int there_are_processes_waiting(EDRRProcess *process) {
     return FALSE;
 }
 
+/**
+ * Returns a boolean indicating if there are 
+ * new processes
+ */
 int there_are_new_processes(EDRRProcess *process) {
     if (!process) return FALSE;
 
@@ -353,6 +398,7 @@ int main(int argc, char const *argv[]) {
 
     char *filename = NULL;
 
+    // Filename can be entered as an argument
     if (argc == 2) {
         filename = (char *)argv[1];
     }
@@ -362,12 +408,13 @@ int main(int argc, char const *argv[]) {
     if (!filename) {
         // No filename given
         // Give users the option of either 
-        // entering file containing process params
-        // or enter these params directly to program
+        // 1. entering file containing process params
+        // 2. enter these params directly to program
+        // 3. exit
         int user_option = 0;
         do {
-            printf("\tDo you wish to:\n");
-            printf("\n\t\t1. Enter path to file containing process parameters\n");
+            printf("\tDo you wish to:\n\n");
+            printf("\t\t1. Enter path to file containing process parameters\n");
             printf("\t\t2. Enter process parameters directly into program\n");
             printf("\t\t3. Exit program\n");
 
@@ -385,11 +432,16 @@ int main(int argc, char const *argv[]) {
         printf("\n\t[+] You have selected '%c'.\n", user_option);
         
         if (user_option == '1') {
-            filename = (char *)calloc(1, MAX_FILE_PATH);
+
+            filename = (char *)calloc(1, MAX_FILE_PATH + 2);
             do {
                 printf("\n\tEnter path to file (press 'q' to exit): ");
-                fgets(filename, MAX_FILE_PATH - 1, stdin);
-                filename[strlen(filename) - 1] = '\0';
+                fgets(filename, MAX_FILE_PATH, stdin);
+
+                if (filename[strlen(filename) - 1] == '\n') {
+                    filename[strlen(filename) - 1] = '\0';
+                }
+
                 if (strncmp(filename, "q", 1) == 0) {
                     printf("\n\t[i] User pressed 'q'. Exiting program...\n\n");
                     return 0;
@@ -397,7 +449,11 @@ int main(int argc, char const *argv[]) {
                 if (strlen(filename) == 0)
                     printf("\n\t[-] Please enter a valid file path.\n");
             } while(strlen(filename) == 0);
+
+            printf("\n\t[+] You have entered '%s'", filename);
+
         } else if (user_option == '2') {
+
             // read in params
             int num_of_processes = -1;
             int burst_time_entered = -1, 
@@ -421,32 +477,36 @@ int main(int argc, char const *argv[]) {
                 scanf("%d", &burst_time_entered);
                 printf("\tEnter the arrival time of Process %d: ", i+1);
                 scanf("%d", &arrival_time_entered);
+                
                 Process *process = (Process *)calloc(1, sizeof(Process));
                 if (!process) {
+                    printf("\n\t[-] main: Unable to allocate memory");
                     return MEM_ALLOC_FAILED;
                 }
-
                 process->pid = i+1;
                 process->burst_time = burst_time_entered;
                 process->cpu_time = burst_time_entered;
                 process->arrival_time = arrival_time_entered;
-
                 insert_node(processes, process);
 
                 EDRRProcess *edrr_process = (EDRRProcess *)calloc(1, sizeof(EDRRProcess));
                 if (!edrr_process) {
+                    printf("\n\t[-] main: Unable to allocate memory");
                     return MEM_ALLOC_FAILED;
                 }
-
                 edrr_process->pid = i+1;
                 edrr_process->burst_time = burst_time_entered;
                 edrr_process->cpu_time = burst_time_entered;
                 edrr_process->arrival_time = arrival_time_entered;
-
                 add_process(&edrr_processes, edrr_process);
             }
+
         } else {
-            printf("\n\t[i] User pressed '3'. Exiting program...\n\n");
+            if (user_option == '3') {
+                printf("\n\t[i] User pressed '3'. Exiting program...\n\n");
+            } else {
+                printf("\n\t[-] User pressed unknown option ''. Exiting program...\n\n", user_option);
+            }
             return 0;
         }
     }
