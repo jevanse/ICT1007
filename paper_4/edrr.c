@@ -1,3 +1,18 @@
+/**
+ * EDRR = Efficient Dynamic Round Robin
+ * 
+ * Based on Paper: An Efficient Dynamic Round Robin Algorithm for CPU Scheduling
+ * 
+ * Authors of the paper:
+ *      - Muhammad Umar Farooq
+ *      - Aamna Shakoor
+ *      - Abu Bakar Siddique
+ * The authors are from the 
+ *      University of Engineering and Technology, Lahore
+ * 
+ * Source of paper: https://ieeexplore.ieee.org/document/7918936
+ */
+
 #include "../test_related/algorithm_testing.h"
 #include <ctype.h>
 
@@ -28,53 +43,33 @@ typedef struct edrr_process {
     struct edrr_process *next;
 } EDRRProcess;
 
-void free_process_list(Process *head) {
-    Process *prev = head;
-    Process *current = head;
-    while (current) {
-        prev = current;
-        current = prev->next;
-        free(prev);
-    }
-}
+// Process (Process and EDRRProcess) list related
 
 // From https://www.geeksforgeeks.org/linked-list-set-2-inserting-a-node/?ref=lbp
-void add_process(EDRRProcess **list, EDRRProcess *node) {
-    EDRRProcess *prev, *next;
-
+/**
+ * Adds an EDRRProcess to a linked list of EDRRProcess-es
+ * 
+ * **list: Pointer to the list pointer that points to a list of EDRRProcess
+ * *process: Pointer to EDRRProcess node
+ */
+void add_process(EDRRProcess **list, EDRRProcess *process) {
     if (!*list) {
         // If list is empty,
-        // initialise with node
-        *list = node;
+        // initialise with process
+        //
+        // (i.e.) process will be the first node in list
+        *list = process;
     } else {
-        prev = NULL;
-        next = *list;
+        EDRRProcess *current = *list;
         
-        while (next) {
-            prev = next;
-            next = next->next;
+        // Traverse till end of list
+        while (current->next) {
+            current = current->next;
         }
 
-        prev->next = node;
+        // Add process to end of list
+        current->next = process;
     }
-}
-
-int is_number(const char *str) {
-    if (!str) {
-        return FALSE;
-    }
-
-    if (strlen(str) == 0) {
-        return FALSE;
-    }
-
-    for (int i = 0; i < strlen(str); i++) {
-        if (isdigit(str[i]) == 0) {
-            return FALSE;
-        }
-    }
-    
-    return TRUE;
 }
 
 void update_process_value(int pid, int turnaround_time, int waiting_time, int response_time, Process **processes) {
@@ -138,33 +133,21 @@ EDRRProcess *copy_list(Process *head) {
 
 // From https://www.geeksforgeeks.org/c-program-bubble-sort-linked-list/
 /* function to swap data of two nodes a and b*/
+/**
+ * Swap two processes in a list (for sorting)
+ */
 void swap(EDRRProcess *a, EDRRProcess *b) {
-    int temp_pid = a->pid;
-    int temp_burst_time = a->burst_time;
-    int temp_cpu_time = a->cpu_time;
-    int temp_waiting_time = a->waiting_time;
-    int temp_arrival_time = a->arrival_time;
-    int temp_turnaround_time = a->turnaround_time;
-    int temp_priority = a->priority;
-    int temp_queue = a->queue;
+    EDRRProcess a_saved = *a;
+    EDRRProcess *b_next_saved = b->next;
 
-    a->pid = b->pid;
-    a->burst_time = b->burst_time;
-    a->cpu_time = b->cpu_time;
-    a->waiting_time = b->waiting_time;
-    a->arrival_time = b->arrival_time;
-    a->turnaround_time = b->turnaround_time;
-    a->priority = b->priority;
-    a->queue = b->queue;
-
-    b->pid = temp_pid;
-    b->burst_time = temp_burst_time;
-    b->cpu_time = temp_cpu_time;
-    b->waiting_time = temp_waiting_time;
-    b->arrival_time = temp_arrival_time;
-    b->turnaround_time = temp_turnaround_time;
-    b->priority = temp_priority;
-    b->queue = temp_queue;
+    // Swap the pointers such that 
+    //      before_a -> a -> b -> after_b
+    // becomes
+    //      before_a -> b -> a -> after_b
+    *a = *b;
+    *b = a_saved;
+    b->next = b_next_saved;
+    a->next = b;
 }
 
 // From https://www.javatpoint.com/program-to-sort-the-elements-of-the-singly-linked-list
@@ -176,12 +159,11 @@ void sort_processes_based_on_arrival_time(EDRRProcess **list) {
     }
 
     while (current) {
-        // Node next will point to node next to current
+        // Next will keep track of the next process to the current
         next = current->next;
         while (next) {
-            // If current node's data is 
-            // greater than next's data,
-            // swap data between them
+            // If current's arrival_time is 
+            // greater than next's, swap
             if (current->arrival_time > next->arrival_time) {
                 swap(current, next);
             }
@@ -200,12 +182,11 @@ void sort_processes_based_on_pid(EDRRProcess **list) {
     }
 
     while (current) {
-        // Node next will point to node next to current
+        // Next will keep track of the next process to the current
         next = current->next;
         while (next) {
-            // If current node's data is 
-            // greater than next's data,
-            // swap data between them
+            // If current's pid is 
+            // greater than next's, swap
             if (current->pid > next->pid) {
                 swap(current, next);
             }
@@ -215,44 +196,51 @@ void sort_processes_based_on_pid(EDRRProcess **list) {
     }
 }
 
-int there_are_processes_ready(EDRRProcess *process) {
-    if (!process) return FALSE;
-
-    while (process) {
-        if (process->queue == READY) {
-            return TRUE;
-        }
-        process = process->next;
+/**
+ * Frees the memory used to store list of processes 
+ * created.
+ * 
+ * *head: list pointer pointing to the processes in memory
+ */
+void free_process_list(Process *head) {
+    Process *prev = head;
+    Process *current = head;
+    while (current) {
+        prev = current;
+        current = prev->next;
+        free(prev);
     }
-
-    return FALSE;
 }
 
-int there_are_processes_waiting(EDRRProcess *process) {
-    if (!process) return FALSE;
+// Validation related
 
-    while (process) {
-        if (process->queue == WAITING) {
-            return TRUE;
-        }
-        process = process->next;
+/**
+ * Checks whether a given string contains only 
+ * numbers -- the string is safe to be converted 
+ * into a number in the future using calls to atoi() 
+ * or similar.
+ * 
+ * *str: character pointer to the string that is to be checked
+ */
+int is_number(const char *str) {
+    if (!str) {
+        return FALSE;
     }
 
-    return FALSE;
-}
-
-int there_are_new_processes(EDRRProcess *process) {
-    if (!process) return FALSE;
-
-    while (process) {
-        if (process->queue == NEW) {
-            return TRUE;
-        }
-        process = process->next;
+    if (strlen(str) == 0) {
+        return FALSE;
     }
 
-    return FALSE;
+    for (int i = 0; i < strlen(str); i++) {
+        if (isdigit(str[i]) == 0) {
+            return FALSE;
+        }
+    }
+    
+    return TRUE;
 }
+
+// EDRR Implementation related
 
 int get_minimum_arrival_time(EDRRProcess * process) {
     int minimum_arrival_time = -1;
@@ -313,6 +301,45 @@ int add_to_ready_queue(EDRRProcess **process, int time_elapsed) {
     *process = processes_ptr;
     
     return added_to_ready_queue;
+}
+
+int there_are_processes_ready(EDRRProcess *process) {
+    if (!process) return FALSE;
+
+    while (process) {
+        if (process->queue == READY) {
+            return TRUE;
+        }
+        process = process->next;
+    }
+
+    return FALSE;
+}
+
+int there_are_processes_waiting(EDRRProcess *process) {
+    if (!process) return FALSE;
+
+    while (process) {
+        if (process->queue == WAITING) {
+            return TRUE;
+        }
+        process = process->next;
+    }
+
+    return FALSE;
+}
+
+int there_are_new_processes(EDRRProcess *process) {
+    if (!process) return FALSE;
+
+    while (process) {
+        if (process->queue == NEW) {
+            return TRUE;
+        }
+        process = process->next;
+    }
+
+    return FALSE;
 }
 
 int main(int argc, char const *argv[]) {
@@ -459,20 +486,7 @@ int main(int argc, char const *argv[]) {
             continue;
         }
 
-        if (edrr_processes->queue == READY) {
-            if (edrr_processes->burst_time <= time_quantum) {
-                edrr_processes->response_time = time_elapsed - edrr_processes->arrival_time;
-                edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
-                edrr_processes->waiting_time = edrr_processes->turnaround_time - edrr_processes->burst_time;
-
-                time_elapsed += edrr_processes->burst_time;
-                
-                edrr_processes->burst_time = 0;
-                edrr_processes->queue = TERMINATED;
-            } else {
-                edrr_processes->queue = WAITING;
-            }
-        } else if (edrr_processes->queue == WAITING) {
+        if (edrr_processes->queue == READY || edrr_processes->queue == WAITING) {
             if (edrr_processes->burst_time <= time_quantum) {
                 edrr_processes->response_time = time_elapsed - edrr_processes->arrival_time;
                 edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
@@ -494,7 +508,6 @@ int main(int argc, char const *argv[]) {
             
             time_elapsed = get_minimum_arrival_time(edrr_processes_head);
             edrr_processes = edrr_processes_head;
-
             continue;
         }
         if (!edrr_processes && there_are_processes_waiting(edrr_processes_head)) {
@@ -504,6 +517,8 @@ int main(int argc, char const *argv[]) {
     }
 
     edrr_processes = edrr_processes_head;
+
+    sort_processes_based_on_pid(&edrr_processes_head);
 
     printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\tResponse time\n");
     printf("\t-----------\t------------\t----------\t------------\t----------------\t-------------\n");
