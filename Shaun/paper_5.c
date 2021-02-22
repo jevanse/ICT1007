@@ -22,7 +22,7 @@ int main(void) {
 	//int quantum = generate_time_quantum(processes); //generated time quantum can be int for now
 	//printf("Quantum Generated: %d\n", quantum);
 	
-	improved_round_robin(processes, 0);
+	improved_round_robin(processes, 500);
 
 	current = processes->head;
 	while (current != NULL)
@@ -44,7 +44,7 @@ int improved_round_robin(Processes * processes, int quantum)
 	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum, queue_front = -1, queue_rear = -1, queue_size = 20, i, number_of_completed_processes = 0;
 	irr_process * process_queue = init_queue(queue_size);
 	irr_process * head = init_irr_processes(processes->head, 500, processes->size);
-	generate_time_quantum(head, 500);
+	generate_time_quantum(head, quantum);
 	
 	while (number_of_completed_processes != processes->size)
 	{
@@ -54,10 +54,10 @@ int improved_round_robin(Processes * processes, int quantum)
 			print_processes_in_queue(process_queue, queue_front, queue_rear);
 			time_quantum = 0; // reset on every loop as it is dynamic
 			time_at_start_of_quantum = time_elapsed;
-
-			//TODO 4: checking function should be here to move the selected node to the front
+			check_queue_for_low_burst_time_proc(process_queue, &queue_front, &queue_rear, queue_size, quantum);
 
 			current = dequeue(process_queue, &queue_front, &queue_rear);
+			
 			if (current == NULL)
 				printf("Current is NULL\n");
 
@@ -113,24 +113,8 @@ int improved_round_robin(Processes * processes, int quantum)
 			print_processes_in_queue(process_queue, queue_front, queue_rear);
 
 		}
+		if (time_elapsed > 5600)
+			return 0;
 	}
 	 return 0;
 }
-
-
-// int logic()
-// {
-// 				Process * arriving_process = processes->head;
-// 			while (arriving_process != NULL)
-// 			{
-// 				if (arriving_process->arrival_time <= time_elapsed && arriving_process->arrival_time > time_at_start_of_quantum)
-// 				{		
-// 					if (arriving_process->arrival_time <= time_elapsed) //assume for now that arrival times are sorted
-// 					{
-// 						//add these to the queue first as they arrive before the current time			
-// 						enqueue(arriving_process, process_queue, &queue_front, &queue_rear, queue_size);
-// 					}
-// 				}
-// 				arriving_process = arriving_process->next;
-// 			}
-// }

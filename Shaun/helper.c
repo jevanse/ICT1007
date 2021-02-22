@@ -31,13 +31,6 @@ irr_process * init_irr_processes(Process* head, int time_quantum, int number_of_
             irr_head->arrival_time = head->arrival_time;
             irr_head->turnaround_time = head->turnaround_time;
             irr_head->priority = head->priority;
-
-            if (irr_head->priority == LOW_PRIORITY)
-                irr_head->time_quantum = time_quantum * 0.8;
-            else if (irr_head->priority == MED_PRIORITY)
-                irr_head->time_quantum = time_quantum;
-            else if (irr_head->priority == HIGH_PRIORITY)
-                irr_head->time_quantum = time_quantum * 1.2;
             tail = irr_head;
         }
         else 
@@ -51,8 +44,6 @@ irr_process * init_irr_processes(Process* head, int time_quantum, int number_of_
             inserting_node->arrival_time = current->arrival_time;
             inserting_node->turnaround_time = current->turnaround_time;
             inserting_node->priority = current->priority;
-            
-            
             tail->next = inserting_node;
             tail = inserting_node;
         }
@@ -64,10 +55,50 @@ irr_process * init_irr_processes(Process* head, int time_quantum, int number_of_
     return irr_head;
 }
 
+void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * front, int * back, int queue_size,int time_quantum)
+{
+    int threshold = time_quantum * 0.2;
+    irr_process * temp = (irr_process *) calloc(1, sizeof(irr_process));
+    int i;
+    //iterate through queue, if any ones are low bt move them to front
+    if (*front == -1) // queue is empty
+        return;
+
+    printf("Before adding low burst time to front\n\t");
+
+    print_processes_in_queue(process_queue, *front, *back);
+
+    for (i = *front; i <= *back; i++)
+    {
+        printf("Comparison bursttimes: %d, threshhold -> %d\n", process_queue[i].burst_time, threshold);
+        if (process_queue[i].burst_time <= threshold)
+        {
+            memcpy(temp, &process_queue[i], sizeof(irr_process));
+            break;
+        }
+    }
+    if (temp->pid != 0)
+    {
+        printf("Temp pid->%d\n", temp->pid);
+        // add to front
+        // i should be the index where the process to be moved is
+        // move to the right by one
+        memcpy(&process_queue[*front + 1], &process_queue[*front], sizeof(irr_process)  *  i);
+        // now process_queue[0] should be empty
+        memcpy(&process_queue[*front], temp, sizeof(irr_process));
+
+    }
+    printf("After adding low burst time to front\n\t");
+
+    print_processes_in_queue(process_queue, *front, *back);
+    return;
+}
+
 void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int * front, int * back, int queue_size)
 {
     irr_process * current = head;
-    
+    int queue_iter = *back;
+
     while (current)
     {
         //check if the queue is empty, if it is skip to the first process, while updating time_elapsed
@@ -85,8 +116,8 @@ void add_arriving_process(irr_process * head, irr_process * process_queue,int * 
         current = current->next;
     }
     free(current);
-    printf("After adding processes: \n\tqueue:\n\t");
     print_processes_in_queue(process_queue, *front, *back);
+
 }
 
 void set_completed_process_properties(Process * head, irr_process * process, int exit_time)
@@ -168,6 +199,38 @@ int init(Processes * processes) //function for testing
     Process *process_3 = (Process*) calloc(1,(sizeof(Process)));
     Process *process_4 = (Process*) calloc(1,(sizeof(Process)));
     Process *process_5 = (Process*) calloc(1,(sizeof(Process)));
+    Process *process_6 = (Process*) calloc(1,(sizeof(Process)));
+    Process *process_7 = (Process*) calloc(1,(sizeof(Process)));
+
+    // process_1->arrival_time = 0;
+	// process_1->pid = 1;
+	// process_1->burst_time = 550;
+	// process_1->cpu_time = process_1->burst_time;
+	// process_1->priority = 3;
+       
+	// process_2->arrival_time = 200;
+	// process_2->pid = 2;
+	// process_2->burst_time = 800;
+	// process_2->cpu_time = process_2->burst_time;
+	// process_2->priority = 1;
+
+	// process_3->arrival_time = 100;
+	// process_3->pid = 3;
+	// process_3->burst_time = 200;
+	// process_3->priority = 3;
+	// process_3->cpu_time = process_3->burst_time;
+
+	// process_4->arrival_time = 400;
+	// process_4->pid = 4;
+	// process_4->burst_time = 2600;
+	// process_4->cpu_time = process_4->burst_time;
+	// process_4->priority = 2;
+
+    // process_5->arrival_time = 0;
+	// process_5->pid = 5;
+	// process_5->burst_time = 1600;
+	// process_5->cpu_time = process_5->burst_time;
+	// process_5->priority = 2;
 
     process_1->arrival_time = 0;
 	process_1->pid = 1;
@@ -175,35 +238,49 @@ int init(Processes * processes) //function for testing
 	process_1->cpu_time = process_1->burst_time;
 	process_1->priority = 3;
        
-	process_2->arrival_time = 200;
+	process_2->arrival_time = 0;
 	process_2->pid = 2;
-	process_2->burst_time = 800;
+	process_2->burst_time = 1250;
 	process_2->cpu_time = process_2->burst_time;
 	process_2->priority = 1;
 
-	process_3->arrival_time = 100;
+	process_3->arrival_time = 0;
 	process_3->pid = 3;
-	process_3->burst_time = 200;
+	process_3->burst_time = 1950;
 	process_3->priority = 3;
 	process_3->cpu_time = process_3->burst_time;
 
-	process_4->arrival_time = 400;
+	process_4->arrival_time = 0;
 	process_4->pid = 4;
-	process_4->burst_time = 2600;
+	process_4->burst_time = 50;
 	process_4->cpu_time = process_4->burst_time;
-	process_4->priority = 2;
+	process_4->priority = 3;
 
     process_5->arrival_time = 0;
 	process_5->pid = 5;
-	process_5->burst_time = 1600;
+	process_5->burst_time = 500;
 	process_5->cpu_time = process_5->burst_time;
 	process_5->priority = 2;
+
+    process_6->arrival_time = 0;
+	process_6->pid = 6;
+	process_6->burst_time = 1200;
+	process_6->cpu_time = process_6->burst_time;
+	process_6->priority = 1;
+
+    process_7->arrival_time = 0;
+	process_7->pid = 7;
+	process_7->burst_time = 100;
+	process_7->cpu_time = process_7->burst_time;
+	process_7->priority = 3;
 
     insert_node(processes, process_1);
     insert_node(processes, process_2);
     insert_node(processes, process_3);
     insert_node(processes, process_4);
     insert_node(processes, process_5);
+    insert_node(processes, process_6);
+    insert_node(processes, process_7);
 
 	return 0;
 }
@@ -241,6 +318,7 @@ void print_processes_in_queue(irr_process * process_queue, int front, int rear)/
 	for (int i = front; i <= rear; i++)
 	{
 		printf("\tProcess %d ", process_queue[i].pid);
+        printf("->burstTime = %d\n", process_queue[i].burst_time);
 	}
 	printf("\n\n");
 

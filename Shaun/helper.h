@@ -32,6 +32,7 @@ bool check_process_execution(Processes *);
 void generate_time_quantum(irr_process * head, int time_quantum);
 void enqueue(irr_process *, irr_process *, int * front, int * rear, int queue_size);
 void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int * front, int * back, int queue_size);
+void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * front, int * back, int queue_size,int time_quantum);
 void set_completed_process_properties(Process * head, irr_process * process, int exit_time);
 irr_process * dequeue(irr_process * process_queue, int * front, int * rear);
 void print_processes_in_queue(irr_process * process_queue, int front, int rear);
