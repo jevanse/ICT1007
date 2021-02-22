@@ -204,6 +204,26 @@ for(i = 0; i < n; i ++){
    printf("Total process time needed: %d", total_burst_time);
 }
 
+//Need to arrage base on arrival times
+int arr_times[n];
+for(i = 0; i <n; i ++){
+  arr_times[i] = process[i].arrival_time;
+}
+ascending(arr_times, n);
+for(i = 0; i <n; i++){
+  printf("\nArrival times ascending: %d", arr_times[i]);
+}
+//Getting timestamps where it changes
+// int timestamps[n];
+// for(i = 0; i<n; i++){
+
+//   if(arr_times[i] + TQ <= arr_times[i+1]){
+//     timestamps[i] = arr_times[i] + TQ;
+//   }
+//   else{
+//     timestamps[i] = process[ready_q[i]-1].arrival_time +TQ;
+//   }
+  
 
 
 
@@ -212,6 +232,8 @@ for(i = 0; i < n; i ++){
 	int timer = 0;
 
 	while (timer <= total_burst_time){
+    
+    
     printf("\nCurrent time %d\n", timer);
        printf("\nReady Queue:");
   for(i = 0; i < n; i++){
@@ -249,7 +271,7 @@ for(i = 0; i < n; i ++){
           
       }
 
-       if(process[ready_q[0]-1].burst_time == 0){ //at any point check if process has finished execution
+       if(process[ready_q[0]-1].burst_time == 0 && timer > 0){ //at any point t > 0, check if process has finished execution
                 printf("Process has finished execution please rearrange");
                  remove_element(ready_q, 0 ,n);
                 //Rearange and print out before removing
@@ -274,21 +296,23 @@ for(i = 0; i < n; i ++){
 
         }
 
-
-    else if(timer % TQ == 0 && timer > 0){
+   
+    else if(timer % TQ == 0 && timer > 0 && process[ready_q[0]].process_number != 0){
+      
         
-          if(process[ready_q[0]-1].burst_time != 0){
+          // if(process[ready_q[0]-1].burst_time != 0 && ready_q[1] != 0){
 
-            //Need to check if its the only process left
-            
-              printf("\nRearrange processes in ascending order based on burst time but front has not finished execution");
+          //   //Need to check if its the only process left, if only process left dont rearrange. 
 
-              shift_left(ready_q, n);
+          //     printf("\nRearrange processes in ascending order based on burst time but front has not finished execution");
 
-          }
+          //     shift_left(ready_q, n);
+
+          // }
           //If process finished execution, just rearrage without process
-              for (int i = 0; i < n-1; ++i) {
-		                for (int j = i + 1; j < n-1; ++j) {
+          printf("Process has not finished execution but tq is up");
+              for (int i = 0; i < n; ++i) {
+		                for (int j = i + 1; j < n; ++j) {
 			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
                 ready_q[i] !=0 && ready_q[j] !=0){
 				        lmao_buffer = ready_q[i];
@@ -413,8 +437,7 @@ for(i = 0; i < n; i ++){
             //           shift_left(ready_q,n);
 
 
-
- 
+printf("Timer buffer %d", timer - process[ready_q[0]-1].arrival_time);
 	timer++;
  
   }
