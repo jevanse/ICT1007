@@ -124,10 +124,13 @@ for(i = 0; i < n; i++ ) //Getting process inputs
 		}
   	}
 
-
+//Initialize all values of the waiting time to zero
+for (i = 0; i < n; i++){
+  process[i].waiting_time = 0;
+}
 
 for(i = 0; i < n; i++){
-  printf("Process %d \t burst time: %d \t arrival time: %d\n", i+1, process[i].burst_time, process[i].arrival_time);
+  printf("Process %d \t burst time: %d \t arrival time: %d \t waiting time: %d\n", i+1, process[i].burst_time, process[i].arrival_time, process[i].waiting_time);
   
 }
 
@@ -378,13 +381,24 @@ for(i = 0; i <n; i++){
 			}
 		}
 	}
-     if(process[ready_q[0]-1].process_number != 0){
+     if(process[ready_q[0]-1].process_number != 0){ 
         next_exe_time_start = next_exe_time_start + TQ;
       }
       else{
         next_exe_time_start = 0;
       }
-      
+
+
+
+
+
+//Geting waiting time
+for (i = 0; i < n; i++){
+  if(process[i].process_number != ready_q[0]){
+    
+  }
+}
+
 
        
     printf("\nBurst time left for process : %d", process[ready_q[0]-1].burst_time);
