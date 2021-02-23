@@ -11,11 +11,14 @@ typedef struct process{
 
 } Process;
 
-void remove_element(int array[] , int index, int array_length)
+void remove_element(int array[] , int element, int array_length)
 {
    int i;
-   for(i = index; i < array_length - 1; i++) array[i] = array[i + 1];
-   array[array_length-1] = 0;
+   for(i = 0; i < array_length; i ++){
+      if (array[i] == element){
+        array[i] = 0;
+      }
+   }
 }
 
 
@@ -75,7 +78,7 @@ void ascending(int array[], int number){
 
 int main(void) {
 	// Main program
-  	int i, j, n, et_buffer, loop,tat[10], TQ, ct[10], max_process_time, response_times[10], max_arrival_time, size_t, lmao_buffer, total_burst_time;
+  	int i, j, n, et_buffer, loop,tat[10], TQ, ct[10], max_process_time, response_times[10], max_arrival_time, size_t, lmao_buffer, total_burst_time; int next_exe_time_start=0;
   	float awt = 0.0, att=0.0, art=0.0;
 
 
@@ -210,20 +213,28 @@ for(i = 0; i <n; i ++){
   arr_times[i] = process[i].arrival_time;
 }
 ascending(arr_times, n);
+next_exe_time_start = arr_times[0] + TQ;
+
+
 for(i = 0; i <n; i++){
   printf("\nArrival times ascending: %d", arr_times[i]);
 }
-//Getting timestamps where it changes
+// // Getting timestamps where it changes
 // int timestamps[n];
-// for(i = 0; i<n; i++){
+// timestamps[0] = arr_times[0] + TQ;
+// for(i = 0; i < n; i++){
+  
+//   if(arr_times[i+1] <= arr_times[i] + TQ ){
+//     if(){
 
-//   if(arr_times[i] + TQ <= arr_times[i+1]){
-//     timestamps[i] = arr_times[i] + TQ;
+//     }
+//    timestamps[i] += TQ;
 //   }
+
 //   else{
 //     timestamps[i] = process[ready_q[i]-1].arrival_time +TQ;
 //   }
-  
+// }
 
 
 
@@ -246,6 +257,9 @@ for(i = 0; i <n; i++){
     int ar_buffer = ready_q[0];
 
 		for(i = 0; i < n; i++){
+      
+      
+
 			if (timer == process[i].arrival_time && process[i].arrival_time == process[i-1].arrival_time && i > 0
       && ar_buffer == 0){  //If >1 processes comes in at t=0 check to see which one has smaller exe time. 
         add_to_rear(ready_q, n, process[i].process_number);
@@ -263,41 +277,60 @@ for(i = 0; i <n; i++){
 			          }
 		          }
 	          }
+            
       }
 
-      else if(timer == process[i].arrival_time){ //Since CPU is already allocated after one second, add to rear.
+      if(timer == process[i].arrival_time){ //Since CPU is already allocated after one second, add to rear.
           printf("Should be added to the rear");
           add_to_rear(ready_q, n, process[i].process_number);
+          // if(next_exe_time_start == 0){
+          //   next_exe_time_start = process[i].arrival_time;
+          // }
           
       }
+      // next_exe_time_start = process[ready_q[0]-1].arrival_time + TQ ;
+      // printf("next exe time %d", next_exe_time_start);
 
-       if(process[ready_q[0]-1].burst_time == 0 && timer > 0){ //at any point t > 0, check if process has finished execution
-                printf("Process has finished execution please rearrange");
-                 remove_element(ready_q, 0 ,n);
-                //Rearange and print out before removing
-                            for (int i = 0; i < n; ++i) {
-		            for (int j = i + 1; j < n; ++j) {
-			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
-                ready_q[i] !=0 && ready_q[j] !=0){
-				        lmao_buffer = ready_q[i];
-				        ready_q[i] = ready_q[j];
-			          ready_q[j] = lmao_buffer;
-			}
-		}
-	}
-    printf("\nReady Queue:");
-  for(i = 0; i < n; i++){
+
+  //     else if(process[ready_q[0]-1].burst_time == 0 && timer > 0 && ready_q[0] != 0){ //at any point t > 0, check if process has finished execution
+  //       // if(process[ready_q[1]-1].arrival_time > previous_exe_time_start + TQ){
+  //       //    previous_exe_time_start = process[ready_q[1]-1].arrival_time;
+  //       // }
+  //       // else{
+  //       //     previous_exe_time_start = timer;        
+  //       // }
+  //       next_exe_time_start = timer + TQ;
+  //               printf("Process has finished execution please rearrange");
+  //                remove_element(ready_q, 0 ,n);
+  //               //Rearange and print out before removing
+  //                           for (int i = 0; i < n; ++i) {
+	// 	            for (int j = i + 1; j < n; ++j) {
+	// 		          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+  //               ready_q[i] !=0 && ready_q[j] !=0){
+	// 			        lmao_buffer = ready_q[i];
+	// 			        ready_q[i] = ready_q[j];
+	// 		          ready_q[j] = lmao_buffer;
+	// 		}
+	// 	}
+	// }
+  //   printf("\nReady Queue:");
+  // for(i = 0; i < n; i++){
  
-    printf("\n%d", ready_q[i]);
-  }
-
- 
-
-
-        }
-
+  //   printf("\n%d", ready_q[i]);
    
-    else if(timer % TQ == 0 && timer > 0 && process[ready_q[0]].process_number != 0){
+  // }
+  //       }
+
+    
+    else if(timer == next_exe_time_start && process[ready_q[0]].process_number != 0){
+     
+        //  if(process[ready_q[1]-1].arrival_time > previous_exe_time_start + TQ){
+        //    previous_exe_time_start = process[ready_q[1]-1].arrival_time;
+         
+        // }
+        // else{
+        //     previous_exe_time_start = timer;        
+        // }
       
         
           // if(process[ready_q[0]-1].burst_time != 0 && ready_q[1] != 0){
@@ -310,6 +343,7 @@ for(i = 0; i <n; i++){
 
           // }
           //If process finished execution, just rearrage without process
+          printf("Next start time %d", next_exe_time_start);
           printf("Process has not finished execution but tq is up");
               for (int i = 0; i < n; ++i) {
 		                for (int j = i + 1; j < n; ++j) {
@@ -321,7 +355,14 @@ for(i = 0; i <n; i++){
 			}
 		}
 	}
-          
+     if(process[ready_q[0]-1].process_number != 0){
+        next_exe_time_start = next_exe_time_start + TQ;
+      }
+      else{
+        next_exe_time_start = 0;
+      }
+      
+
        
     printf("\nBurst time left for process : %d", process[ready_q[0]-1].burst_time);
     
@@ -333,7 +374,25 @@ for(i = 0; i <n; i++){
   }
 
     }
-      
+  
+  else if(process[i].burst_time == 0 && ready_q[0] != 0){
+    printf("Process %d has finished execution", process[i].process_number);
+     remove_element(ready_q, process[i].process_number ,n);
+                //Rearange and print out before removing
+                            for (int i = 0; i < n; ++i) {
+		            for (int j = i + 1; j < n; ++j) {
+			          if (process[ready_q[i]-1].burst_time > process[ready_q[j]-1].burst_time && ready_q[i] && 
+                ready_q[i] !=0 && ready_q[j] !=0){
+				        lmao_buffer = ready_q[i];
+				        ready_q[i] = ready_q[j];
+			          ready_q[j] = lmao_buffer;
+			}
+		}
+	}
+  }
+  
+
+
   //     else{ //If no new process exist
             
               
@@ -437,7 +496,7 @@ for(i = 0; i <n; i++){
             //           shift_left(ready_q,n);
 
 
-printf("Timer buffer %d", timer - process[ready_q[0]-1].arrival_time);
+// printf("Timer buffer %d", timer - process[ready_q[0]-1].arrival_time);
 	timer++;
  
   }
