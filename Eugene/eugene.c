@@ -393,11 +393,6 @@ for(i = 0; i <n; i++){
 
 
 //Geting waiting time
-for (i = 0; i < n; i++){
-  if(process[i].process_number != ready_q[0]){
-    
-  }
-}
 
 
        
@@ -520,9 +515,20 @@ for (i = 0; i < n; i++){
 
 
 // printf("Timer buffer %d", timer - process[ready_q[0]-1].arrival_time);
+  for (i = 0; i < n; i++){
+  if(process[i].process_number != ready_q[0] && process[i].burst_time != 0){
+    process[i].waiting_time += 1;
+  }
+}
+
 	timer++;
  
   }
+  for(i = 0; i < n; i++){
+  printf("\nProcess %d waiting times %d",process[i].process_number ,process[i].waiting_time - process[i].arrival_time);
+  
+}
+
 }
  
 
