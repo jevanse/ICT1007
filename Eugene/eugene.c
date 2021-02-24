@@ -25,22 +25,24 @@ void remove_element(int array[] , int element, int array_length)
 void shift_left(int array[], int n){
   int temp, lol;
     temp=array[0];
-    for(int i=0;i<n-1;i++)
+
+    for(int i=0; i < n ; i++)
     {
         
         array[i]=array[i+1];
 
     }
-    array[n-1]=temp;
     
-  for(int i = n-1; i > n-1; i --){
-
-    if(array[i] == 0){
-      lol = array[i];
-      array[i] = array[i-1];
-      array[i-1] = lol;
+      for(int i=0; i < n ; i++)
+    {
+       if(array[i] == 0){
+         array[i] = temp;
+         break;
+       }
     }
-  }
+
+    array[n-1]=0;
+
   
 }
 
