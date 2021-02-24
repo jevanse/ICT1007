@@ -32,11 +32,13 @@ void shift_left(int array[], int n){
 
     }
     array[n-1]=temp;
-  for(int i = 0; i < n -1; i ++){
-    if(array[i] == 0 && array[i-1]!=0){
+    
+  for(int i = n-1; i > n-1; i --){
+
+    if(array[i] == 0){
       lol = array[i];
-      array[i-1] = array[i];
-      array[i] = lol;
+      array[i] = array[i-1];
+      array[i-1] = lol;
     }
   }
   
@@ -269,6 +271,7 @@ for(i = 0; i <n; i++){
 
 // //Need a timer to keep track based on the arrival times, after every cycle of TQ, rearrange, if process arrive before TQ finish, add to rear first. 
 	int timer = 0;
+  int new_counter = 0;
 
 	while (timer <= total_burst_time + total_arr_time){
     
@@ -289,6 +292,7 @@ for(i = 0; i <n; i++){
       
 			if (timer == process[i].arrival_time && process[i].arrival_time == process[i-1].arrival_time && i > 0
       && ar_buffer == 0){  //If >1 processes comes in at t=0 check to see which one has smaller exe time. 
+        new_counter = 1;
         add_to_rear(ready_q, n, process[i].process_number);
         printf("First process arrival time %d\n", process[i].arrival_time);
         printf("Comparing process arrival time %d \n",process[i-1].arrival_time);
@@ -309,6 +313,7 @@ for(i = 0; i <n; i++){
       }
 
       else if(timer == process[i].arrival_time){ //Since CPU is already allocated after one second, add to rear.
+          new_counter = 1;
           printf("Should be added to the rear");
           add_to_rear(ready_q, n, process[i].process_number);
           // if(next_exe_time_start == 0){
@@ -317,14 +322,14 @@ for(i = 0; i <n; i++){
           
       }
     }
-    int number_of_zeros = get_zeros(ready_q, n);
+  //   int number_of_zeros = get_zeros(ready_q, n);
     
-    int last_number_zeros;
+  //   int last_number_zeros;
  
-   if (number_of_zeros < last_number_zeros){ //Check when the process came in
-   time_added = timer;
+  //  if (number_of_zeros < last_number_zeros){ //Check when the process came in
+  //  time_added = timer;
    
-}
+
       // next_exe_time_start = process[ready_q[0]-1].arrival_time + TQ ;
       // printf("next exe time %d", next_exe_time_start);
 
@@ -361,13 +366,15 @@ for(i = 0; i <n; i++){
       
       
     
-
     printf("Process %d has finished execution", process[ready_q[0]-1].process_number);
     next_exe_time_start = timer + TQ;
 
-    if(timer >= time_added && time_added != 0){ //If process time is up, and new process added, rearrange
+    if(new_counter > 0){ //If process time is up, and new process added, rearrange
+        printf("new process was added before time is up");
+
+
            remove_element(ready_q, process[ready_q[0]-1].process_number ,n);
-       shift_left(ready_q, n);
+            shift_left(ready_q, n);
                 //Rearange and print out before removing
               for (int i = 0; i < n; ++i) {
 		            for (int j = i + 1; j < n; ++j) {
@@ -379,14 +386,16 @@ for(i = 0; i <n; i++){
 			}
 		}
 	}
-  time_added = 0; //Resetting the time stamp where it last got added
+  new_counter = 0; //Resetting the time stamp where it last got added
     }
 
 
 
     else{
-     remove_element(ready_q, process[ready_q[0]-1].process_number , n);
-       shift_left(ready_q, n);
+      printf("No need process was added");
+     remove_element(ready_q, ready_q[0] , n);
+      printf("After removing: %d", ready_q[0]);
+      shift_left(ready_q, n);
                 //Rearange and print out before removing
   //             for (int i = 0; i < n; ++i) {
 	// 	            for (int j = i + 1; j < n; ++j) {
@@ -399,12 +408,17 @@ for(i = 0; i <n; i++){
 	// 	}
 	// }
     }
+          printf("\nReady Queue:");
+  for(i = 0; i < n; i++){
+ 
+    printf("\n%d", ready_q[i]);
+  }
   }
   
     
     else if(timer == next_exe_time_start && process[ready_q[0]].process_number != 0){
 
-       if(timer >= time_added && time_added != 0){
+       if(new_counter > 0){
       printf("Process is added before this, need to sort");
                     for (int i = 0; i < n; ++i) {
 		                for (int j = i + 1; j < n; ++j) {
@@ -416,7 +430,7 @@ for(i = 0; i <n; i++){
 			}
 		}
 	}
-  time_added = 0;
+  new_counter = 0;
     }
     else{
       shift_left(ready_q, n);
@@ -594,18 +608,18 @@ for(i = 0; i <n; i++){
 
 
 
-printf("Latest number of zeros %d", number_of_zeros);
-printf("Initial number of zeros %d", last_number_zeros);
-  last_number_zeros = number_of_zeros;
+// printf("Latest number of zeros %d", number_of_zeros);
+// printf("Initial number of zeros %d", last_number_zeros);
+//   last_number_zeros = number_of_zeros;
 	timer++;
- 
+}
   }
-  for(i = 0; i < n; i++){
-  printf("\nProcess %d waiting times %d",process[i].process_number ,process[i].waiting_time - process[i].arrival_time);
+//   for(i = 0; i < n; i++){
+//   printf("\nProcess %d waiting times %d",process[i].process_number ,process[i].waiting_time - process[i].arrival_time);
   
-}
+// }
 
-}
+
  
 
         //   if (process[i].burst_time <= TQ && process[i].burst_time == timer){
