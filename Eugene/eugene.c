@@ -615,13 +615,13 @@ for(i = 0; i <n; i++){
 //   last_number_zeros = number_of_zeros;
 	timer++;
 }
-  }
-//   for(i = 0; i < n; i++){
-//   printf("\nProcess %d waiting times %d",process[i].process_number ,process[i].waiting_time - process[i].arrival_time);
   
-// }
+  for (i = 0; i < n; i++){
+  printf("\nProcess %d waiting time %d",process[i].process_number ,process[i].waiting_time - process[i].arrival_time);
+  
+}
 
-
+}
  
 
         //   if (process[i].burst_time <= TQ && process[i].burst_time == timer){
