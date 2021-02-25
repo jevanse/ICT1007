@@ -55,6 +55,7 @@ irr_process * init_irr_processes(Process* head, int time_quantum, int number_of_
     return irr_head;
 }
 
+
 void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * front, int * back, int queue_size,int time_quantum)
 {
     int threshold = time_quantum * 0.2;
@@ -94,21 +95,28 @@ void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * fron
     return;
 }
 
-void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int * front, int * back, int queue_size)
+void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int time_at_start_of_quantum, int * front, int * back, int queue_size)
 {
     irr_process * current = head;
     int queue_iter = *back;
 
     while (current)
     {
-        //check if the queue is empty, if it is skip to the first process, while updating time_elapsed
-        if (current->arrival_time <= *time_elapsed) 
+        printf("Front value: %d\n", *front);
+        printf("Current -> arrivaltime = %d\n", current->arrival_time );
+        printf("Time elapsed: %d\n", *time_elapsed);
+        if (current->arrival_time <= *time_elapsed && current->arrival_time >= time_at_start_of_quantum) 
+        {
             enqueue(current, process_queue, front, back, queue_size);
-        else if (*front == -1 && *time_elapsed <= current->arrival_time) // will only occur once 
+            return;
+        }
+        //check if the queue is empty, if it is skip to the first process, while updating time_elapsed
+        else if (*front == -1 && *time_elapsed < current->arrival_time) // will only occur once 
 	    {
 		    printf("Add arriving process: Queue is empty\n");
             //proceed to skip 
             *time_elapsed = current->arrival_time;
+            printf("TIme elapsed inside add_arriving_process: %d", *time_elapsed);
             enqueue(current, process_queue, front, back, queue_size);
             return; //return as you should re-check the time_elapsed after executing the current process
 
@@ -120,12 +128,25 @@ void add_arriving_process(irr_process * head, irr_process * process_queue,int * 
 
 }
 
+irr_process * check_for_short_burst_time_processes(irr_process * head,int time_elapsed)
+{
+    irr_process * current = head;
+
+    while (current)
+    {
+        if (current->arrival_time <= time_elapsed && current->burst_time <= current->time_quantum * 0.2 && current->done == false) // means process has arrived
+            return current;
+        current = current->next;
+    }
+    return NULL;
+}
+
 void set_completed_process_properties(Process * head, irr_process * process, int exit_time)
 {
     //calculate turnaroundtime, waiting time etc.
     process->turnaround_time = exit_time - process->arrival_time;
     process->waiting_time = process->turnaround_time - process->cpu_time;
-
+    process->done = true;
     Process * current = head;
     while (current)
     {
@@ -202,6 +223,7 @@ int init(Processes * processes) //function for testing
     Process *process_6 = (Process*) calloc(1,(sizeof(Process)));
     Process *process_7 = (Process*) calloc(1,(sizeof(Process)));
 
+     /* test case 1 */
     // process_1->arrival_time = 0;
 	// process_1->pid = 1;
 	// process_1->burst_time = 550;
@@ -232,55 +254,74 @@ int init(Processes * processes) //function for testing
 	// process_5->cpu_time = process_5->burst_time;
 	// process_5->priority = 2;
 
-    process_1->arrival_time = 0;
-	process_1->pid = 1;
-	process_1->burst_time = 550;
-	process_1->cpu_time = process_1->burst_time;
-	process_1->priority = 3;
+    /* test case 2 */
+    // process_1->arrival_time = 0;
+	// process_1->pid = 1;
+	// process_1->burst_time = 550;
+	// process_1->cpu_time = process_1->burst_time;
+	// process_1->priority = 3;
        
-	process_2->arrival_time = 0;
+	// process_2->arrival_time = 0;
+	// process_2->pid = 2;
+	// process_2->burst_time = 1250;
+	// process_2->cpu_time = process_2->burst_time;
+	// process_2->priority = 1;
+
+	// process_3->arrival_time = 0;
+	// process_3->pid = 3;
+	// process_3->burst_time = 1950;
+	// process_3->priority = 3;
+	// process_3->cpu_time = process_3->burst_time;
+
+	// process_4->arrival_time = 0;
+	// process_4->pid = 4;
+	// process_4->burst_time = 50;
+	// process_4->cpu_time = process_4->burst_time;
+	// process_4->priority = 3;
+
+    // process_5->arrival_time = 0;
+	// process_5->pid = 5;
+	// process_5->burst_time = 500;
+	// process_5->cpu_time = process_5->burst_time;
+	// process_5->priority = 2;
+
+    // process_6->arrival_time = 0;
+	// process_6->pid = 6;
+	// process_6->burst_time = 1200;
+	// process_6->cpu_time = process_6->burst_time;
+	// process_6->priority = 1;
+
+    // process_7->arrival_time = 0;
+	// process_7->pid = 7;
+	// process_7->burst_time = 100;
+	// process_7->cpu_time = process_7->burst_time;
+	// process_7->priority = 3;
+
+    process_1->arrival_time = 200;
+	process_1->pid = 1;
+	process_1->burst_time = 600;
+	process_1->cpu_time = process_1->burst_time;
+	process_1->priority = 2;
+       
+	process_2->arrival_time = 1200;
 	process_2->pid = 2;
-	process_2->burst_time = 1250;
+	process_2->burst_time = 1000;
 	process_2->cpu_time = process_2->burst_time;
-	process_2->priority = 1;
+	process_2->priority = 2;
 
-	process_3->arrival_time = 0;
+	process_3->arrival_time = 1000;
 	process_3->pid = 3;
-	process_3->burst_time = 1950;
-	process_3->priority = 3;
+	process_3->burst_time = 1300;
+	process_3->priority = 2;
 	process_3->cpu_time = process_3->burst_time;
-
-	process_4->arrival_time = 0;
-	process_4->pid = 4;
-	process_4->burst_time = 50;
-	process_4->cpu_time = process_4->burst_time;
-	process_4->priority = 3;
-
-    process_5->arrival_time = 0;
-	process_5->pid = 5;
-	process_5->burst_time = 500;
-	process_5->cpu_time = process_5->burst_time;
-	process_5->priority = 2;
-
-    process_6->arrival_time = 0;
-	process_6->pid = 6;
-	process_6->burst_time = 1200;
-	process_6->cpu_time = process_6->burst_time;
-	process_6->priority = 1;
-
-    process_7->arrival_time = 0;
-	process_7->pid = 7;
-	process_7->burst_time = 100;
-	process_7->cpu_time = process_7->burst_time;
-	process_7->priority = 3;
 
     insert_node(processes, process_1);
     insert_node(processes, process_2);
     insert_node(processes, process_3);
-    insert_node(processes, process_4);
-    insert_node(processes, process_5);
-    insert_node(processes, process_6);
-    insert_node(processes, process_7);
+    // insert_node(processes, process_4);
+    // insert_node(processes, process_5);
+    // insert_node(processes, process_6);
+    // insert_node(processes, process_7);
 
 	return 0;
 }
@@ -298,6 +339,31 @@ void generate_time_quantum(irr_process * head, int time_quantum)
             curr->time_quantum = time_quantum * 1.2;
         curr = curr->next;
     }
+}
+void check_for_idling(irr_process * head, int *time_elapsed)
+{
+    irr_process * current = head;
+    int time_skip = INT32_MAX;
+    while (current)
+    {
+        if (current->done)
+        {
+            current = current->next;
+            continue;
+        }
+            
+        if (current->arrival_time <= *time_elapsed)
+            return;
+        if (current->done == false && current->arrival_time < time_skip)
+        {
+            //set time_skip to smallest arrival time
+            time_skip = current->arrival_time;
+        }
+        current = current->next;
+    }
+
+    *time_elapsed = time_skip;
+    printf("Time skipped to: %d\n", time_skip);
 }
 
 bool check_process_execution(Processes * processes)

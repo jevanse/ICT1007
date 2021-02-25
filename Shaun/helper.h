@@ -18,6 +18,7 @@ typedef struct irr_struct
     int response_time;
     int priority;
     int time_quantum;
+    bool done;
     struct irr_struct *next;
 } irr_process;
 
@@ -31,8 +32,10 @@ int improved_round_robin(Processes * processes, int quantum);
 bool check_process_execution(Processes *);
 void generate_time_quantum(irr_process * head, int time_quantum);
 void enqueue(irr_process *, irr_process *, int * front, int * rear, int queue_size);
-void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int * front, int * back, int queue_size);
+irr_process * check_for_short_burst_time_processes(irr_process * head,int time_elapsed);
+void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int time_at_start_of_quantum,int * front, int * back, int queue_size);
 void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * front, int * back, int queue_size,int time_quantum);
 void set_completed_process_properties(Process * head, irr_process * process, int exit_time);
 irr_process * dequeue(irr_process * process_queue, int * front, int * rear);
+void check_for_idling(irr_process * head, int *time_elapsed);
 void print_processes_in_queue(irr_process * process_queue, int front, int rear);
