@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define FILE_READ_FAILED -1
 #define MEM_ALLOC_FAILED -2
 #define PARSE_FILE_FAILED -3
+
+#define TRUE 1
+#define FALSE 0
 
 typedef struct process {
     int pid;
@@ -24,6 +28,7 @@ typedef struct processes {
     Process *tail;
 } Processes;
 
+int remove_spaces (char *str_trimmed, const char *str_untrimmed);
 int init_processes(Processes *processes);
 int insert_node(Processes *processes, Process *process);
 int test_insertion();
