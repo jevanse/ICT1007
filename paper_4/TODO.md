@@ -1,10 +1,10 @@
 - Comment on codes
 - ~~Work on README.md~~
-- Work on input / output
+- ~~Work on input / output~~
 - ~~Translate back from EDRRProcess to Processes~~
 - For every call to calloc and malloc, check if memory address is NULL
 - Free memory after everything
-- Validate input read from file (i.e. improve `read_file()`)
+- ~~Validate input read from file (i.e. improve `read_file()`)~~
 
 
 - Test cases
