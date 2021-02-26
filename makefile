@@ -9,7 +9,11 @@ solutions/paper_4: paper_4/edrr.c $(TEST_SOURCE) $(TEST_HEADER)
 
 solutions/paper_4_debug: paper_4/edrr.c $(TEST_SOURCE) $(TEST_HEADER)
 	mkdir -p solutions
-	gcc -g paper_4/edrr.c $(TEST_SOURCE) $(TEST_HEADER) -o solutions/paper_4
+	gcc -g paper_4/edrr.c $(TEST_SOURCE) $(TEST_HEADER) -o solutions/paper_4_debug
+
+solutions/test: $(TEST_SOURCE) $(TEST_HEADER)
+	mkdir -p solutions
+	gcc -g $(TEST_SOURCE) $(TEST_HEADER) -o solutions/test
 
 clean:
 	rm -rf solutions/

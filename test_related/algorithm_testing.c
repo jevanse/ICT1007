@@ -1,6 +1,6 @@
 #include "algorithm_testing.h"
 /*
-Include this main if you're testing this file
+//Include this main if you're testing this file
 int main()
 {
     printf("** Start of tests **\n\n");
@@ -9,6 +9,21 @@ int main()
     printf("** End of tests **\n");
 }
 */
+
+// From https://stackoverflow.com/a/30372683
+int remove_spaces (char *str_trimmed, const char *str_untrimmed) {
+    while (*str_untrimmed != '\0') {
+        if (!isspace(*str_untrimmed)) {
+            *str_trimmed = *str_untrimmed;
+            str_trimmed++;
+        }
+        str_untrimmed++;
+    }
+    *str_trimmed = '\0';
+
+    return EXIT_SUCCESS;
+}
+
 int init_processes(Processes *processes)
 {
     processes->head = NULL;
@@ -86,20 +101,17 @@ int read_file(const char *filename, char ** file_contents) {
     // Reset file pointer to point 
     // at start of file
     fseek(file, 0, SEEK_SET);
+    
+    *file_contents = (char *)calloc(file_size + 1, sizeof(char));
 
-    char *contents_read = (char *)calloc(file_size + 1, sizeof(char));
-
-    if (!contents_read) {
+    if (!(*file_contents)) {
         return MEM_ALLOC_FAILED;
     }
 
-    fread(contents_read, file_size, 1, file);
+    fread(*file_contents, file_size, 1, file);
 
     // Close the file
     fclose(file);
-
-    *file_contents = (char *)calloc(file_size + 1, sizeof(char));
-    strcpy(*file_contents, contents_read);
 
     return EXIT_SUCCESS;
 }
@@ -108,15 +120,34 @@ int parse_file_contents(const char *file_contents, Processes **processes) {
     char *line = strtok((char *)file_contents, "\n");
 
     *processes = (Processes *)calloc(1, sizeof(Processes));
+
+    if (!(*processes)) {
+        return MEM_ALLOC_FAILED;
+    }
+
     init_processes(*processes);
 
     while (line != NULL) {
+        char *line_trimmed = (char *)calloc(1, strlen(line) + 1);
+        
+        if (!line_trimmed) {
+            return MEM_ALLOC_FAILED;
+        }
+
+        remove_spaces(line_trimmed, line);
+
+        if (line_trimmed[0] == ';') {
+            free(line_trimmed);
+            line = strtok(NULL, "\n");
+            continue;
+        }
+
         int pid_read = -1;
         int burst_time_read = -1;
         int arrival_time_read = -1;
         int priority_read = -1;
 
-        sscanf(line, "%d,%d,%d,%d", &pid_read, &burst_time_read, &arrival_time_read, &priority_read);
+        sscanf(line_trimmed, "%d,%d,%d,%d", &pid_read, &burst_time_read, &arrival_time_read, &priority_read);
 
         if (pid_read == -1 || burst_time_read == -1 || arrival_time_read == -1 || priority_read == -1) {
             return PARSE_FILE_FAILED;
@@ -134,6 +165,8 @@ int parse_file_contents(const char *file_contents, Processes **processes) {
         process->priority = priority_read;
 
         insert_node(*processes, process);
+
+        free(line_trimmed);
         
         line = strtok(NULL, "\n");
     }
@@ -147,12 +180,23 @@ int get_processes(const char *filename, Processes **processes) {
         return read_file_status;
     }
 
-    return parse_file_contents(file_contents, processes);
+    int parse_file_status = parse_file_contents(file_contents, processes);
+
+    free(file_contents);
+
+    return parse_file_status;
 }
 
 void test_read() {
     Processes *processes = NULL;
-    get_processes("./processes.txt", &processes);
+    const char *test_filename = "./solutions/processes.txt";
+    get_processes(test_filename, &processes);
+
+    if (!processes) {
+        printf("[-] Unable to read '%s'.", test_filename);
+        return;
+    }
+
     Process *current = processes->head;
 
     printf("\tSize of list: %d\n", processes->size);
