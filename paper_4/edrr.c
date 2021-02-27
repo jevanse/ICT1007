@@ -111,6 +111,18 @@ void copy_list_back(Process **head, EDRRProcess *edrr_head) {
     }
 }
 
+// From https://www.geeksforgeeks.org/find-length-of-a-linked-list-iterative-and-recursive/
+/**
+ * Count the number of nodes in a linked list
+ */
+int get_count(EDRRProcess *head) {
+    // Base case
+    if (!head) return 0;
+
+    // count = 1 + get_count(remaining)
+    return 1 + get_count(head->next);
+}
+
 // From https://www.geeksforgeeks.org/c-program-to-create-copy-of-a-singly-linked-list-using-recursion/#:~:text=Allocate%20the%20new%20Node%20in,and%20the%20duplicate%20linked%20list.
 /**
  * Creates a local copy of the list of processes read from file
@@ -124,6 +136,10 @@ EDRRProcess *copy_list(Process *head) {
     }
 
     EDRRProcess *new_process = (EDRRProcess *)calloc(1, sizeof(EDRRProcess));
+
+    if (!new_process) {
+        return NULL;
+    }
 
     new_process->pid = head->pid;
     new_process->burst_time = head->burst_time;
@@ -201,6 +217,22 @@ void sort_processes_based_on_pid(EDRRProcess **list) {
             next = next->next;
         }
         current = current->next;
+    }
+}
+
+/**
+ * Frees the memory used to store list of EDRR processes 
+ * created.
+ * 
+ * *head: list pointer pointing to the EDRR processes in memory
+ */
+void free_edrr_process_list(EDRRProcess *head) {
+    EDRRProcess *prev = head;
+    EDRRProcess *current = head;
+    while (current) {
+        prev = current;
+        current = prev->next;
+        free(prev);
     }
 }
 
@@ -392,6 +424,7 @@ int main(int argc, char const *argv[]) {
     EDRRProcess *edrr_processes = NULL;
     EDRRProcess *edrr_processes_head = NULL;
     int time_elapsed = 0;
+    int num_of_context_switches = 0;
     int added_to_ready_queue = FALSE;
     int maximum_burst_time = 0;
     float time_quantum = 0.0;
@@ -407,33 +440,39 @@ int main(int argc, char const *argv[]) {
 
     if (!filename) {
         // No filename given
-        // Give users the option of either 
+        // Give users the option of: 
         // 1. entering file containing process params
-        // 2. enter these params directly to program
-        // 3. exit
-        int user_option = 0;
+        // 2. entering these params directly to program
+        // 0. exiting programs
+        int user_option;
         do {
+            user_option = -1;
             printf("\tDo you wish to:\n\n");
             printf("\t\t1. Enter path to file containing process parameters\n");
             printf("\t\t2. Enter process parameters directly into program\n");
-            printf("\t\t3. Exit program\n");
 
-            printf("\n\tEnter your option: ");
+            printf("\n\tEnter your option ('0' to exit): ");
+            scanf("%d", &user_option);
 
-            user_option = getchar();
-            if (user_option != '1' && user_option != '2' && user_option != '3') {
-                printf("\n\t[-] Please enter 1, 2 or 3.\n\n");
+            if (user_option == 0) {
+                printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                return EXIT_SUCCESS;
             }
-            if (user_option != '\n') {
-                getchar();
+            
+            if (user_option != 1 && user_option != 2) {
+                printf("\n\t[-] Please enter 1 or 2.\n\n");
             }
-        } while (user_option != '1' && user_option != '2' && user_option != '3');
+        } while (user_option != 1 && user_option != 2);
         
-        printf("\n\t[+] You have selected '%c'.\n", user_option);
+        printf("\n\t[+] You have selected '%d'.\n", user_option);
         
-        if (user_option == '1') {
+        if (user_option == 1) {
 
             filename = (char *)calloc(1, MAX_FILE_PATH + 2);
+            if (!filename) {
+                printf("\n\t[-] main: Unable to allocate memory.\n\n");
+                return MEM_ALLOC_FAILED;
+            }
             do {
                 printf("\n\tEnter path to file (press 'q' to exit): ");
                 fgets(filename, MAX_FILE_PATH, stdin);
@@ -444,94 +483,69 @@ int main(int argc, char const *argv[]) {
 
                 if (strncmp(filename, "q", 1) == 0) {
                     printf("\n\t[i] User pressed 'q'. Exiting program...\n\n");
+                    free(filename);
                     return EXIT_SUCCESS;
                 }
-                if (strlen(filename) == 0)
+                if (strlen(filename) == 0) {
                     printf("\n\t[-] Please enter a valid file path.\n");
+                    free(filename);
+                }
             } while(strlen(filename) == 0);
 
             printf("\n\t[+] You have entered '%s'.\n", filename);
 
-        } else if (user_option == '2') {
+        } else if (user_option == 2) {
 
             // read in params
             char *num_of_processes_str = NULL;
-            int num_of_processes = -1;
-            int burst_time_entered = -1, 
-                arrival_time_entered = -1;
+            int num_of_processes;
+            int burst_time_entered, 
+                arrival_time_entered;
             do {
-                num_of_processes_str = (char *)calloc(1, 5 + 2);
+                num_of_processes = -1;
                 printf("\n\tEnter the number of processes to be scheduled ('0' to exit): ");
-                fgets(num_of_processes_str, 5, stdin);
-
-                if (num_of_processes_str[strlen(num_of_processes_str) - 1] == '\n') {
-                    num_of_processes_str[strlen(num_of_processes_str) - 1] = '\0';
-                }
-
-                if (!is_number(num_of_processes_str)) {
-                    printf("\n\t[-] Please enter a number.\n");
-                }
-            } while (!is_number(num_of_processes_str));
-
-            num_of_processes = atoi(num_of_processes_str);
+                scanf("%d", &num_of_processes);
             
-            if (num_of_processes == 0) {
-                printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                return EXIT_SUCCESS;
-            }
+                if (num_of_processes == 0) {
+                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                    return EXIT_SUCCESS;
+                }
+            } while (num_of_processes < 0);
             
             printf("\n\tNumber of processes: %d\n", num_of_processes);
-
-            char *burst_time_str = NULL, *arrival_time_str = NULL;
             
             processes = (Processes *)calloc(1, sizeof(Processes));
+            if (!processes) {
+                printf("\n\t[-] main: Unable to allocate memory.\n\n");
+                return MEM_ALLOC_FAILED;
+            }
 
             for (int i = 0; i < num_of_processes; i++) {
                 do {
-                    burst_time_str = (char *)calloc(1, 5 + 2);
+                    burst_time_entered = -1;
                     printf("\n\tEnter the burst time of Process %d ('0' to exit): ", i+1);
-                    fgets(burst_time_str, 5, stdin);
+                    scanf("%d", &burst_time_entered);
 
-                    if (burst_time_str[strlen(burst_time_str) - 1] == '\n') {
-                        burst_time_str[strlen(burst_time_str) - 1] = '\0';
+                    if (burst_time_entered == 0)  {
+                        printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                        return EXIT_SUCCESS;
                     }
-
-                    if (!is_number(burst_time_str)) {
-                        printf("\n\t[-] Please enter a number.\n");
-                    }
-                } while (!is_number(burst_time_str));
-
-                burst_time_entered = atoi(burst_time_str);
-
-                if (burst_time_entered == 0)  {
-                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                    return EXIT_SUCCESS;
-                }
+                } while (burst_time_entered < 0);
 
                 do {
-                    arrival_time_str = (char *)calloc(1, 5 + 2);
+                    arrival_time_entered = -1;
                     printf("\n\tEnter the arrival time of Process %d ('0' to exit): ", i+1);
-                    fgets(arrival_time_str, 5, stdin);
+                    scanf("%d", &arrival_time_entered);
 
-                    if (arrival_time_str[strlen(arrival_time_str) - 1] == '\n') {
-                        arrival_time_str[strlen(arrival_time_str) - 1] = '\0';
+                    if (arrival_time_entered == 0)  {
+                        printf("\n\t[i] User entered '0'. Exiting program...\n\n");
+                        return EXIT_SUCCESS;
                     }
-
-                    if (!is_number(arrival_time_str)) {
-                        printf("\n\t[-] Please enter a number.\n");
-                    }
-                } while (!is_number(arrival_time_str));
-
-                arrival_time_entered = atoi(arrival_time_str);
-
-                if (arrival_time_entered == 0)  {
-                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                    return EXIT_SUCCESS;
-                }
+                } while (arrival_time_entered < 0);
                 
                 Process *process = (Process *)calloc(1, sizeof(Process));
                 if (!process) {
-                    printf("\n\t[-] main: Unable to allocate memory");
+                    printf("\n\t[-] main: Unable to allocate memory.\n\n");
                     return MEM_ALLOC_FAILED;
                 }
                 process->pid = i+1;
@@ -542,7 +556,7 @@ int main(int argc, char const *argv[]) {
 
                 EDRRProcess *edrr_process = (EDRRProcess *)calloc(1, sizeof(EDRRProcess));
                 if (!edrr_process) {
-                    printf("\n\t[-] main: Unable to allocate memory");
+                    printf("\n\t[-] main: Unable to allocate memory.\n\n");
                     return MEM_ALLOC_FAILED;
                 }
                 edrr_process->pid = i+1;
@@ -552,26 +566,22 @@ int main(int argc, char const *argv[]) {
                 add_process(&edrr_processes, edrr_process);
             }
 
-        } else {
-            if (user_option == '3') {
-                printf("\n\t[i] User pressed '3'. Exiting program...\n\n");
-            } else {
-                printf("\n\t[-] User pressed unknown option '%c'. Exiting program...\n\n", user_option);
-            }
-            return EXIT_SUCCESS;
         }
     }
 
     if (filename) {
         int get_process_status = get_processes(filename, &processes);
 
-        if (get_process_status == MEM_ALLOC_FAILED) {
-            printf("\n\t[-] get_process_status: Unable to allocate memory for reading file.\n\n");
+        if (get_process_status == FILE_READ_FAILED) {
+            printf("\n\t[-] get_process_status: Unable to read %s.\n\n", filename);
+            free(filename);
             return EXIT_FAILURE;
         }
 
-        if (get_process_status == FILE_READ_FAILED) {
-            printf("\n\t[-] get_process_status: Unable to read %s.\n\n", filename);
+        free(filename);
+
+        if (get_process_status == MEM_ALLOC_FAILED) {
+            printf("\n\t[-] get_process_status: Unable to allocate memory for reading file.\n\n");
             return EXIT_FAILURE;
         }
 
@@ -588,6 +598,13 @@ int main(int argc, char const *argv[]) {
         }
 
         edrr_processes = copy_list(processes->head);
+
+        int length_of_edrr_processes = get_count(edrr_processes);
+
+        if (length_of_edrr_processes < 1) {
+            printf("\n\t[-] copy_list: Copying of Process list to EDRRProcess list failed.\n\n");
+            return EXIT_FAILURE;
+        }
     }
 
     sort_processes_based_on_arrival_time(&edrr_processes);
@@ -614,6 +631,12 @@ int main(int argc, char const *argv[]) {
                 
                 edrr_processes->burst_time = 0;
                 edrr_processes->queue = TERMINATED;
+                if (there_are_new_processes(edrr_processes_head) || 
+                    there_are_processes_ready(edrr_processes_head) || 
+                    there_are_processes_waiting(edrr_processes_head)) {
+                    
+                    num_of_context_switches++;
+                }
             } else {
                 edrr_processes->queue = WAITING;
             }
@@ -661,6 +684,12 @@ int main(int argc, char const *argv[]) {
         printf("\t%-11d\t%-12d\t%-10d\t%-12d\t%-16d\t%-13d\n", process->pid, process->arrival_time, process->cpu_time, process->waiting_time, process->turnaround_time, process->response_time);
         process = process->next;
     }
+
+    free_edrr_process_list(edrr_processes_head);
+    free_process_list(processes->head);
+    free(processes);
+
+    printf("Num of context switches: %d", num_of_context_switches);
 
     return EXIT_SUCCESS;
 }
