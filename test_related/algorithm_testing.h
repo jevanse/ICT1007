@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #define FILE_READ_FAILED -1
+#define FILE_WRITE_FAILED -1
 #define MEM_ALLOC_FAILED -2
 #define PARSE_FILE_FAILED -3
 
@@ -31,8 +32,10 @@ typedef struct processes {
 int remove_spaces (char *str_trimmed, const char *str_untrimmed);
 int init_processes(Processes *processes);
 int insert_node(Processes *processes, Process *process);
-int test_insertion();
+Processes * test_insertion();
 int read_file(const char *filename, char ** file_contents);
 int parse_file_contents(const char *file_contents, Processes **processes);
 int get_processes(const char *filename, Processes **processes);
 void test_read();
+int write_file(const char *filename, Processes * processes, int context_switches);
+void test_write_results();

@@ -1,14 +1,15 @@
 #include "algorithm_testing.h"
-/*
+
 //Include this main if you're testing this file
-int main()
-{
-    printf("** Start of tests **\n\n");
-    test_insertion();
-    test_read();
-    printf("** End of tests **\n");
-}
-*/
+// int main()
+// {
+//     printf("** Start of tests **\n\n");
+//     Processes * processes = test_insertion();
+//     test_read();
+//     test_write_results(processes);
+//     printf("\n** End of tests **\n");
+// }
+
 
 // From https://stackoverflow.com/a/30372683
 int remove_spaces (char *str_trimmed, const char *str_untrimmed) {
@@ -51,7 +52,7 @@ int insert_node(Processes *processes, Process *process)
     return 0;
 }
 
-int test_insertion()
+Processes * test_insertion()
 {
     /* Test function */
     Processes * processes = (Processes *) malloc(sizeof(Processes));
@@ -82,7 +83,7 @@ int test_insertion()
         current = current->next;
     }
 
-    return 0;
+    return processes;
 }
 
 int read_file(const char *filename, char ** file_contents) {
@@ -189,7 +190,8 @@ int get_processes(const char *filename, Processes **processes) {
 
 void test_read() {
     Processes *processes = NULL;
-    const char *test_filename = "./solutions/processes.txt";
+    //const char *test_filename = "./solutions/processes.txt";
+    const char *test_filename = "processes.txt";
     get_processes(test_filename, &processes);
 
     if (!processes) {
@@ -206,4 +208,33 @@ void test_read() {
         printf("\tArrival time %d\n", current->arrival_time);
         current = current->next;
     }
+}
+
+int write_results(const char* filename, Processes * processes, int context_switches)
+{
+    Process * current = processes->head;
+    // Open file for writing
+    FILE* file = fopen(filename, "wb+"); //Creates an empty file for both reading and writing
+    printf("\n File %s created. \n", filename);
+    // Check if file opened correctly
+    if (!file) {
+        return FILE_WRITE_FAILED;
+    }
+
+    fprintf(file, "pid, bursttime, arrivaltime, priority, turnaroundtime, waittime, responsetime, contextswitches\n");
+    fprintf(file, ",,,,,,,%d\n", context_switches);
+    while (current)
+    {
+        //iterate through processes and write to file
+        fprintf(file, "%d, %d, %d, %d, %d, %d, %d\n", current->pid, current->cpu_time, current->arrival_time, current->priority, current->turnaround_time, current->waiting_time, current->response_time);
+        printf("Writing to file...\n");
+        current = current->next;
+    }
+    fclose(file);
+    return 0;
+}
+
+void test_write_results(Processes* processes)
+{
+    write_results("test_results.csv", processes, 10); // just for testing
 }
