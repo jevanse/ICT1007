@@ -39,4 +39,5 @@ int parse_file_contents(const char *file_contents, Processes **processes);
 int get_processes(const char *filename, Processes **processes);
 void test_read();
 int write_file(const char *filename, Processes * processes, int context_switches);
-void test_write_results();
+int write_results(const char* filename, Processes * processes);
+void test_write_results(Processes* processes);
