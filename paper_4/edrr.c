@@ -433,7 +433,13 @@ int main(int argc, char const *argv[]) {
 
     // Filename can be entered as an argument
     if (argc == 2) {
-        filename = (char *)argv[1];
+        filename = (char *)calloc(1, strlen(argv[1]) + 1);
+        if (!filename) {
+            printf("\t[-] main: Unable to allocate memory.\n\n");
+            return MEM_ALLOC_FAILED;
+        }
+        strcpy(filename, argv[1]);
+        // filename = (char *)argv[1];
     }
 
     printf("\n");
@@ -689,7 +695,7 @@ int main(int argc, char const *argv[]) {
     free_process_list(processes->head);
     free(processes);
 
-    printf("Num of context switches: %d", num_of_context_switches);
+    printf("\n\tNum of context switches: %d\n\n", num_of_context_switches);
 
     return EXIT_SUCCESS;
 }
