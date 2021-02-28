@@ -11,7 +11,7 @@ irr_process * init_queue(int queue_size)
     
 }
 
-irr_process * init_irr_processes(Process* head, int time_quantum, int number_of_processes)
+irr_process * init_irr_processes(Process* head, int number_of_processes)
 {
     //create a copy of the linked list 
     Process * current = head;
@@ -50,8 +50,6 @@ irr_process * init_irr_processes(Process* head, int time_quantum, int number_of_
         current = current->next;
         
     }
-
-    free(current);
     return irr_head;
 }
 
@@ -98,7 +96,6 @@ void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * fron
 void add_arriving_process(irr_process * head, irr_process * process_queue,int * time_elapsed, int time_at_start_of_quantum, int * front, int * back, int queue_size)
 {
     irr_process * current = head;
-    int queue_iter = *back;
 
     while (current)
     {
@@ -154,6 +151,7 @@ void set_completed_process_properties(Process * head, irr_process * process, int
         {
             current->turnaround_time = process->turnaround_time;
             current->waiting_time = process->waiting_time;
+            current->response_time = process->response_time;
             break;
         }
         current = current->next;
@@ -363,7 +361,7 @@ void check_for_idling(irr_process * head, int *time_elapsed)
     }
 
     *time_elapsed = time_skip;
-    printf("Time skipped to: %d\n", time_skip);
+    //printf("Time skipped to: %d\n", time_skip);
 }
 
 bool check_process_execution(Processes * processes)
@@ -393,14 +391,14 @@ void print_processes_in_queue(irr_process * process_queue, int front, int rear)/
 void print_results(Processes* processes)
 {
     Process * current = processes->head;
-    printf("| PID | Burst time | Arrival Time | TurnAroundTime | Waiting Time | Response Time \n");
+    printf("| PID | Burst time | Arrival Time | TurnAroundTime | Waiting Time | Response Time | Priority \n");
 	//iterate through processes and print results into a table
     while (current)
     {
-        printf("| %d |\t|%d\t|%d\t|%d\t|%d\t|%d\n", current->pid, current->burst_time, current->arrival_time, current->turnaround_time, current->waiting_time, current->response_time);
+        printf("| %d\t| %d\t| %d\t| %d\t| %d\t| %d\t| %d|\n", current->pid, current->cpu_time, current->arrival_time, current->turnaround_time, current->waiting_time, current->response_time, current->priority);
         current = current->next;
     }
     printf("--------------------\n");
-    printf("Number of context switches %d\n", 10); // ToDo: Change this to real ctx 
+    printf("Number of context switches %d\n", processes->context_switches); // ToDo: Change this to real ctx 
 }
 

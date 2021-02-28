@@ -17,37 +17,40 @@ int main(int argc, char *argv[]) {
 	Processes * processes = (Processes *) malloc(sizeof(Processes));
 	init_processes(processes);
 	//init(processes);
-
+	//improved_round_robin(processes, 500);
+	//print_results(processes);
+	
 	//int quantum = generate_time_quantum(processes); //generated time quantum can be int for now
 	
 	if (argc == 1) // command line mode
 	{
 		//take in processes
-		int number_of_processes = 0, time_quantum = 0;
+		int number_of_processes, time_quantum;
 
 		printf("Number of processes? ");
 		scanf("%d", &number_of_processes);
 
 		for (int i = 0; i < number_of_processes; i++)
 		{
-			Process * new_process = calloc(0, sizeof(Process));
+			Process * new_process = (Process*) calloc(0, sizeof(Process));
 			printf("Burst time for process %d :", i+1);
-			scanf("%d", new_process->burst_time);
+			scanf("%d", &new_process->burst_time);
 
 			printf("Arrival time for process %d :", i+1);
-			scanf("%d", new_process->arrival_time);
+			scanf("%d", &new_process->arrival_time);
 
-			printf("\n Priority for processes must be 1, 2 or 3\n");
+			printf("\nPriority for processes must be 1, 2 or 3\n");
 			printf("Priority time for process %d :", i+1);
-			scanf("%d", new_process->burst_time);
+			scanf("%d", &new_process->priority);
 
 			new_process->cpu_time = new_process->burst_time;
 			new_process->pid = i + 1;
 
 			insert_node(processes, new_process);
-			
 		}
 		
+		print_results(processes);
+		processes->size = number_of_processes;
 		printf("Enter time quantum: ");
 		scanf("%d", &time_quantum);
 
@@ -59,7 +62,8 @@ int main(int argc, char *argv[]) {
 	else if (argc != 2)
 	{
 		printf("Usage: paper_5 <file_name>");
-		// generate time quantum that will be used
+		return -1;
+		// generate time quantum that will be used 
 	}
 	
 }
@@ -69,9 +73,9 @@ int improved_round_robin(Processes * processes, int quantum)
 	//iterate through processes
 	irr_process * current = (irr_process* )malloc(sizeof(irr_process));
 	irr_process * tmp = (irr_process* )malloc(sizeof(irr_process));
-	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum = 0, queue_front = -1, queue_rear = -1, queue_size = 20, i, number_of_completed_processes = 0;
+	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum = 0, number_of_completed_processes = 0, context_switches = 0;
 	//irr_process * process_queue = init_queue(queue_size);
-	irr_process * head = init_irr_processes(processes->head, 500, processes->size);
+	irr_process * head = init_irr_processes(processes->head, processes->size);
 	
 	generate_time_quantum(head, quantum);
 
@@ -115,20 +119,28 @@ int improved_round_robin(Processes * processes, int quantum)
 			else 
 				time_quantum = current->time_quantum;
 
+			context_switches++;
 			time_elapsed += time_quantum;
 			current->burst_time -= time_quantum;
+
+			if (current->first != true && current->burst_time < current->cpu_time)
+			{
+				current->response_time = time_at_start_of_quantum - current->arrival_time;
+				current->first = true;
+			}
+			
 
 			if (current->burst_time <= 0) // technically remaining burst_time can only go down to 0, this is to catch edge cases I guess
 			{
 				set_completed_process_properties(processes->head, current, time_elapsed);
 				number_of_completed_processes++;
-				printf("P%d exiting, tat->%d, wt->%d\n", current->pid, current->turnaround_time, current->waiting_time);
 				current = current->next;
 				continue;
 			}
 			current = current->next;
 		}
 	}
+	processes->context_switches = context_switches;
 	return 0;
 }
 

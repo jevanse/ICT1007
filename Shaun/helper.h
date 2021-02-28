@@ -19,6 +19,7 @@ typedef struct irr_struct
     int priority;
     int time_quantum;
     bool done;
+    bool first;
     struct irr_struct *next;
 } irr_process;
 
@@ -26,7 +27,7 @@ typedef struct irr_struct
 void swap(Process*, Process*);
 void bubbleSort(Process arr[], int);
 int init(Processes * processes);
-irr_process * init_irr_processes(Process * head, int time_quantum, int number_of_processes);
+irr_process * init_irr_processes(Process * head, int number_of_processes);
 irr_process * init_queue(int);
 int improved_round_robin(Processes * processes, int quantum);
 bool check_process_execution(Processes *);
