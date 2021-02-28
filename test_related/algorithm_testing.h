@@ -25,6 +25,7 @@ typedef struct process {
 
 typedef struct processes {
     int size;
+    int context_switches;
     Process *head;
     Process *tail;
 } Processes;

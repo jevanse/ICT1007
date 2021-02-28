@@ -30,6 +30,7 @@ int init_processes(Processes *processes)
     processes->head = NULL;
     processes->tail = NULL;
     processes->size = 0;
+    processes->context_switches = 0;
     return 0;
 }
 
@@ -210,7 +211,7 @@ void test_read() {
     }
 }
 
-int write_results(const char* filename, Processes * processes, int context_switches)
+int write_results(const char* filename, Processes * processes)
 {
     Process * current = processes->head;
     // Open file for writing
@@ -222,7 +223,7 @@ int write_results(const char* filename, Processes * processes, int context_switc
     }
 
     fprintf(file, "pid, bursttime, arrivaltime, priority, turnaroundtime, waittime, responsetime, contextswitches\n");
-    fprintf(file, ",,,,,,,%d\n", context_switches);
+    fprintf(file, ",,,,,,,%d\n", processes->context_switches);
     while (current)
     {
         //iterate through processes and write to file
