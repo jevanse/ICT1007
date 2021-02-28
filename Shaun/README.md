@@ -20,3 +20,8 @@
 - If a process is high priority
   - Check if its remaining burst time is 1.3 * allocated time quantum
     - i.e. allocated TQ = 600, remaining burst time = 750, **run it till completion**
+
+### Goals
+- Reduce number of context switches
+- Give higher priority processes more execution time
+- 
