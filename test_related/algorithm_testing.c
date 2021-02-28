@@ -237,5 +237,5 @@ int write_results(const char* filename, Processes * processes)
 
 void test_write_results(Processes* processes)
 {
-    write_results("test_results.csv", processes, 10); // just for testing
+    write_results("test_results.csv", processes); // just for testing
 }
