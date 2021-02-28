@@ -161,17 +161,35 @@ EDRRProcess *copy_list(Process *head) {
  * Swap two processes in a list (for sorting)
  */
 void swap(EDRRProcess *a, EDRRProcess *b) {
-    EDRRProcess a_saved = *a;
-    EDRRProcess *b_next_saved = b->next;
+    int temp_pid = a->pid;
+    int temp_burst_time = a->burst_time;
+    int temp_cpu_time = a->cpu_time;
+    int temp_waiting_time = a->waiting_time;
+    int temp_arrival_time = a->arrival_time;
+    int temp_turnaround_time = a->turnaround_time;
+    int temp_response_time = a->response_time;
+    int temp_priority = a->priority;
+    int temp_queue = a->queue;
 
-    // Swap the pointers such that 
-    //      before_a -> a -> b -> after_b
-    // becomes
-    //      before_a -> b -> a -> after_b
-    *a = *b;
-    *b = a_saved;
-    b->next = b_next_saved;
-    a->next = b;
+    a->pid = b->pid;
+    a->burst_time = b->burst_time;
+    a->cpu_time = b->cpu_time;
+    a->waiting_time = b->waiting_time;
+    a->arrival_time = b->arrival_time;
+    a->turnaround_time = b->turnaround_time;
+    a->response_time = b->response_time;
+    a->priority = b->priority;
+    a->queue = b->queue;
+    
+    b->pid = temp_pid;
+    b->burst_time = temp_burst_time;
+    b->cpu_time = temp_cpu_time;
+    b->waiting_time = temp_waiting_time;
+    b->arrival_time = temp_arrival_time;
+    b->turnaround_time = temp_turnaround_time;
+    b->response_time = temp_response_time;
+    b->priority = temp_priority;
+    b->queue = temp_queue;
 }
 
 // From https://www.javatpoint.com/program-to-sort-the-elements-of-the-singly-linked-list
@@ -419,6 +437,11 @@ int there_are_new_processes(EDRRProcess *process) {
     return FALSE;
 }
 
+void clear_buffer() {
+    int c;
+    while ((c = getchar()) != EOF && c != '\n');
+}
+
 int main(int argc, char const *argv[]) {
     Processes *processes = NULL;
     EDRRProcess *edrr_processes = NULL;
@@ -439,7 +462,6 @@ int main(int argc, char const *argv[]) {
             return MEM_ALLOC_FAILED;
         }
         strcpy(filename, argv[1]);
-        // filename = (char *)argv[1];
     }
 
     printf("\n");
@@ -457,17 +479,23 @@ int main(int argc, char const *argv[]) {
             printf("\t\t1. Enter path to file containing process parameters\n");
             printf("\t\t2. Enter process parameters directly into program\n");
 
-            printf("\n\tEnter your option ('0' to exit): ");
-            scanf("%d", &user_option);
+            printf("\n\tEnter your option ('-1' to exit): ");
+            int num_of_input_scanned = scanf("%d", &user_option);
 
-            if (user_option == 0) {
-                printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                return EXIT_SUCCESS;
+            if (num_of_input_scanned != 1) {
+                printf("\n\t[-] Please enter a valid number.\n\n");
+            } else {
+                if (user_option == -1) {
+                    printf("\n\t[i] User entered '-1'. Exiting program...\n\n");
+                    return EXIT_SUCCESS;
+                }
+                
+                if (user_option != 1 && user_option != 2) {
+                    printf("\n\t[-] Please enter 1 or 2.\n\n");
+                }
             }
-            
-            if (user_option != 1 && user_option != 2) {
-                printf("\n\t[-] Please enter 1 or 2.\n\n");
-            }
+
+            clear_buffer();
         } while (user_option != 1 && user_option != 2);
         
         printf("\n\t[+] You have selected '%d'.\n", user_option);
@@ -480,15 +508,15 @@ int main(int argc, char const *argv[]) {
                 return MEM_ALLOC_FAILED;
             }
             do {
-                printf("\n\tEnter path to file (press 'q' to exit): ");
+                printf("\n\tEnter path to file (press '0' to exit): ");
                 fgets(filename, MAX_FILE_PATH, stdin);
 
                 if (filename[strlen(filename) - 1] == '\n') {
                     filename[strlen(filename) - 1] = '\0';
                 }
 
-                if (strncmp(filename, "q", 1) == 0) {
-                    printf("\n\t[i] User pressed 'q'. Exiting program...\n\n");
+                if (strncmp(filename, "-1", strlen("-1")) == 0) {
+                    printf("\n\t[i] User pressed '-1'. Exiting program...\n\n");
                     free(filename);
                     return EXIT_SUCCESS;
                 }
@@ -503,19 +531,28 @@ int main(int argc, char const *argv[]) {
         } else if (user_option == 2) {
 
             // read in params
-            char *num_of_processes_str = NULL;
             int num_of_processes;
             int burst_time_entered, 
                 arrival_time_entered;
             do {
                 num_of_processes = -1;
-                printf("\n\tEnter the number of processes to be scheduled ('0' to exit): ");
-                scanf("%d", &num_of_processes);
-            
-                if (num_of_processes == 0) {
-                    printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                    return EXIT_SUCCESS;
+                printf("\n\tEnter the number of processes to be scheduled ('-1' to exit): ");
+                int num_of_input_scanned = scanf("%d", &num_of_processes);
+
+                if (num_of_input_scanned != 1) {
+                    printf("\n\t[-] Please enter a valid number.\n");
+                } else {
+                    if (num_of_processes == -1) {
+                        printf("\n\t[i] User entered '-1'. Exiting program...\n\n");
+                        return EXIT_SUCCESS;
+                    }
+
+                    if (num_of_processes < 0) {
+                        printf("\n\t[-] Please enter a positive number.\n");
+                    }
                 }
+            
+                clear_buffer();
             } while (num_of_processes < 0);
             
             printf("\n\tNumber of processes: %d\n", num_of_processes);
@@ -529,24 +566,44 @@ int main(int argc, char const *argv[]) {
             for (int i = 0; i < num_of_processes; i++) {
                 do {
                     burst_time_entered = -1;
-                    printf("\n\tEnter the burst time of Process %d ('0' to exit): ", i+1);
-                    scanf("%d", &burst_time_entered);
+                    printf("\n\tEnter the burst time of Process %d ('-1' to exit): ", i+1);
+                    int num_of_input_scanned = scanf("%d", &burst_time_entered);
 
-                    if (burst_time_entered == 0)  {
-                        printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                        return EXIT_SUCCESS;
+                    if (num_of_input_scanned != 1) {
+                        printf("\n\t[-] Please enter a valid number.\n");
+                    } else {
+                        if (burst_time_entered == -1)  {
+                            printf("\n\t[i] User entered '-1'. Exiting program...\n\n");
+                            return EXIT_SUCCESS;
+                        }
+
+                        if (burst_time_entered < 0) {
+                            printf("\n\t[-] Please enter a positive number.\n");
+                        }
                     }
+
+                    clear_buffer();
                 } while (burst_time_entered < 0);
 
                 do {
                     arrival_time_entered = -1;
-                    printf("\n\tEnter the arrival time of Process %d ('0' to exit): ", i+1);
-                    scanf("%d", &arrival_time_entered);
+                    printf("\n\tEnter the arrival time of Process %d ('-1' to exit): ", i+1);
+                    int num_of_input_scanned = scanf("%d", &arrival_time_entered);
 
-                    if (arrival_time_entered == 0)  {
-                        printf("\n\t[i] User entered '0'. Exiting program...\n\n");
-                        return EXIT_SUCCESS;
+                    if (num_of_input_scanned != 1) {
+                        printf("\n\t[-] Please enter a valid number.\n");
+                    } else {
+                        if (arrival_time_entered == -1)  {
+                            printf("\n\t[i] User entered '-1'. Exiting program...\n\n");
+                            return EXIT_SUCCESS;
+                        }
+
+                        if (arrival_time_entered < 0) {
+                            printf("\n\t[-] Please enter a positive number.\n");
+                        }
                     }
+
+                    clear_buffer();
                 } while (arrival_time_entered < 0);
                 
                 Process *process = (Process *)calloc(1, sizeof(Process));
@@ -613,8 +670,9 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    sort_processes_based_on_arrival_time(&edrr_processes);
     edrr_processes_head = edrr_processes;
+    //sort_processes_based_on_pid(&edrr_processes);
+    sort_processes_based_on_arrival_time(&edrr_processes);
 
     // Loop till end of list
     while (edrr_processes) {
@@ -663,6 +721,8 @@ int main(int argc, char const *argv[]) {
         }
     }
 
+    processes->context_switches = num_of_context_switches;
+
     edrr_processes = edrr_processes_head;
 
     sort_processes_based_on_pid(&edrr_processes_head);
@@ -690,6 +750,8 @@ int main(int argc, char const *argv[]) {
         printf("\t%-11d\t%-12d\t%-10d\t%-12d\t%-16d\t%-13d\n", process->pid, process->arrival_time, process->cpu_time, process->waiting_time, process->turnaround_time, process->response_time);
         process = process->next;
     }
+
+    write_results("results.csv", processes);
 
     free_edrr_process_list(edrr_processes_head);
     free_process_list(processes->head);

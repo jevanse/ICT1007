@@ -1,14 +1,14 @@
 #include "algorithm_testing.h"
 
 //Include this main if you're testing this file
-// int main()
-// {
-//     printf("** Start of tests **\n\n");
-//     Processes * processes = test_insertion();
-//     test_read();
-//     test_write_results(processes);
-//     printf("\n** End of tests **\n");
-// }
+//int main()
+//{
+//    printf("** Start of tests **\n\n");
+//    Processes * processes = test_insertion();
+//    test_read();
+//    test_write_results(processes);
+//    printf("\n** End of tests **\n");
+//}
 
 
 // From https://stackoverflow.com/a/30372683
@@ -36,8 +36,6 @@ int init_processes(Processes *processes)
 
 int insert_node(Processes *processes, Process *process)
 {
-    Process *current = (Process*) malloc(sizeof(Process));
-
     processes->size += 1;
     if (processes->head == NULL)
     {
@@ -172,6 +170,7 @@ int parse_file_contents(const char *file_contents, Processes **processes) {
         
         line = strtok(NULL, "\n");
     }
+    return EXIT_SUCCESS;
 }
 
 int get_processes(const char *filename, Processes **processes) {
