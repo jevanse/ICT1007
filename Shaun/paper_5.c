@@ -97,23 +97,6 @@ int improved_round_robin(Processes * processes, int quantum)
 				current = current->next;
 				continue;
 			}
-
-			if (time_at_start_of_quantum == time_elapsed && number_of_completed_processes != processes->size) //no time quantum has been set, no processes can run
-			{
-				irr_process * temp = (irr_process *) malloc(sizeof(irr_process));
-				
-				while (temp->next != NULL)
-				{
-					if (temp->arrival_time > time_elapsed)
-					{
-						if (temp->arrival_time < temp->next->arrival_time)
-						{
-							time_elapsed = temp->arrival_time;
-						}
-					}
-					temp = temp->next;
-				} // while loop
-			}
 			current = current->next;
 		}
 	}
