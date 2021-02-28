@@ -39,3 +39,4 @@ void set_completed_process_properties(Process * head, irr_process * process, int
 irr_process * dequeue(irr_process * process_queue, int * front, int * rear);
 void check_for_idling(irr_process * head, int *time_elapsed);
 void print_processes_in_queue(irr_process * process_queue, int front, int rear);
+void print_results(Processes* processes);

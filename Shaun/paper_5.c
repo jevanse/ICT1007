@@ -13,26 +13,55 @@ Todo:
 
 */
 
-int main(void) {
-  // higher priority value denotes higher priority
+int main(int argc, char *argv[]) {
 	Processes * processes = (Processes *) malloc(sizeof(Processes));
-	init(processes);
-	Process * current = processes->head;
+	init_processes(processes);
+	//init(processes);
 
 	//int quantum = generate_time_quantum(processes); //generated time quantum can be int for now
-	//printf("Quantum Generated: %d\n", quantum);
 	
-	improved_round_robin(processes, 500);
-
-	current = processes->head;
-	while (current != NULL)
+	if (argc == 1) // command line mode
 	{
-		printf("P%d TurnaroundTime: %d\n", current->pid, current->turnaround_time);
-		printf("P%d WaitingTime: %d\n", current->pid, current->waiting_time);
-		current = current->next;
+		//take in processes
+		int number_of_processes = 0, time_quantum = 0;
 
+		printf("Number of processes? ");
+		scanf("%d", &number_of_processes);
+
+		for (int i = 0; i < number_of_processes; i++)
+		{
+			Process * new_process = calloc(0, sizeof(Process));
+			printf("Burst time for process %d :", i+1);
+			scanf("%d", new_process->burst_time);
+
+			printf("Arrival time for process %d :", i+1);
+			scanf("%d", new_process->arrival_time);
+
+			printf("\n Priority for processes must be 1, 2 or 3\n");
+			printf("Priority time for process %d :", i+1);
+			scanf("%d", new_process->burst_time);
+
+			new_process->cpu_time = new_process->burst_time;
+			new_process->pid = i + 1;
+
+			insert_node(processes, new_process);
+			
+		}
+		
+		printf("Enter time quantum: ");
+		scanf("%d", &time_quantum);
+
+		improved_round_robin(processes, time_quantum);
+
+		print_results(processes);
+		return 0;
 	}
-	return 0;
+	else if (argc != 2)
+	{
+		printf("Usage: paper_5 <file_name>");
+		// generate time quantum that will be used
+	}
+	
 }
 
 int improved_round_robin(Processes * processes, int quantum)
@@ -102,7 +131,6 @@ int improved_round_robin(Processes * processes, int quantum)
 	}
 	return 0;
 }
-
 
 
 	// //Process * current = processes->head;

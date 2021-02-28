@@ -389,3 +389,18 @@ void print_processes_in_queue(irr_process * process_queue, int front, int rear)/
 	printf("\n\n");
 
 }
+
+void print_results(Processes* processes)
+{
+    Process * current = processes->head;
+    printf("| PID | Burst time | Arrival Time | TurnAroundTime | Waiting Time | Response Time \n");
+	//iterate through processes and print results into a table
+    while (current)
+    {
+        printf("| %d |\t|%d\t|%d\t|%d\t|%d\t|%d\n", current->pid, current->burst_time, current->arrival_time, current->turnaround_time, current->waiting_time, current->response_time);
+        current = current->next;
+    }
+    printf("--------------------\n");
+    printf("Number of context switches %d\n", 10); // ToDo: Change this to real ctx 
+}
+
