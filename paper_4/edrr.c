@@ -23,7 +23,7 @@
 #define EXIT_SUCCESS 0
 
 /**
- * The queue state of processes
+ * The queue states of processes
  */
 #define NEW 0
 #define READY 1
@@ -75,6 +75,17 @@ void add_process(EDRRProcess **list, EDRRProcess *process) {
     }
 }
 
+/**
+ * Update the value of a particular Process node in a Process linked list.
+ * 
+ * Used when copying back EDRRProcess to Process
+ * 
+ * pid: the process id of the Process to be updated
+ * turnaround_time: the new turnaround time
+ * waiting_time: the new waiting time
+ * response_time: the new response time
+ * **processes: the pointer to the list of Process-es
+ */
 void update_process_value(int pid, int turnaround_time, int waiting_time, int response_time, Process **processes) {
     if (!processes) return;
     
@@ -113,7 +124,7 @@ void copy_list_back(Process **head, EDRRProcess *edrr_head) {
 
 // From https://www.geeksforgeeks.org/find-length-of-a-linked-list-iterative-and-recursive/
 /**
- * Count the number of nodes in a linked list
+ * Count the number of nodes in a EDRRProcess list
  */
 int get_count(EDRRProcess *head) {
     // Base case
@@ -158,7 +169,7 @@ EDRRProcess *copy_list(Process *head) {
 // From https://www.geeksforgeeks.org/c-program-bubble-sort-linked-list/
 /* function to swap data of two nodes a and b*/
 /**
- * Swap two processes in a list (for sorting)
+ * Swap two EDRRProcess-es in a list (for sorting)
  */
 void swap(EDRRProcess *a, EDRRProcess *b) {
     int temp_pid = a->pid;
@@ -303,7 +314,7 @@ int is_number(const char *str) {
 /**
  * Gets the minimum arrival time of all new processes in a list
  */
-int get_minimum_arrival_time(EDRRProcess * process) {
+int get_minimum_arrival_time(EDRRProcess *process) {
     int minimum_arrival_time = -1;
 
     if (!process) return minimum_arrival_time;
@@ -437,7 +448,10 @@ int there_are_new_processes(EDRRProcess *process) {
     return FALSE;
 }
 
-void clear_buffer() {
+/**
+ * Clears the input buffer
+ */
+void clear_input_buffer() {
     int c;
     while ((c = getchar()) != EOF && c != '\n');
 }
@@ -495,13 +509,13 @@ int main(int argc, char const *argv[]) {
                 }
             }
 
-            clear_buffer();
+            clear_input_buffer();
         } while (user_option != 1 && user_option != 2);
         
         printf("\n\t[+] You have selected '%d'.\n", user_option);
         
         if (user_option == 1) {
-
+            // Ask for filename
             filename = (char *)calloc(1, MAX_FILE_PATH + 2);
             if (!filename) {
                 printf("\n\t[-] main: Unable to allocate memory.\n\n");
@@ -527,10 +541,8 @@ int main(int argc, char const *argv[]) {
             } while(strlen(filename) == 0);
 
             printf("\n\t[+] You have entered '%s'.\n", filename);
-
         } else if (user_option == 2) {
-
-            // read in params
+            // Ask for params
             int num_of_processes;
             int burst_time_entered, 
                 arrival_time_entered;
@@ -552,7 +564,7 @@ int main(int argc, char const *argv[]) {
                     }
                 }
             
-                clear_buffer();
+                clear_input_buffer();
             } while (num_of_processes < 0);
             
             printf("\n\tNumber of processes: %d\n", num_of_processes);
@@ -582,7 +594,7 @@ int main(int argc, char const *argv[]) {
                         }
                     }
 
-                    clear_buffer();
+                    clear_input_buffer();
                 } while (burst_time_entered < 0);
 
                 do {
@@ -603,8 +615,10 @@ int main(int argc, char const *argv[]) {
                         }
                     }
 
-                    clear_buffer();
+                    clear_input_buffer();
                 } while (arrival_time_entered < 0);
+
+                // Create new Process and EDRRProcess
                 
                 Process *process = (Process *)calloc(1, sizeof(Process));
                 if (!process) {
@@ -628,11 +642,11 @@ int main(int argc, char const *argv[]) {
                 edrr_process->arrival_time = arrival_time_entered;
                 add_process(&edrr_processes, edrr_process);
             }
-
         }
     }
 
     if (filename) {
+        // Read in and get Process list
         int get_process_status = get_processes(filename, &processes);
 
         if (get_process_status == FILE_READ_FAILED) {
@@ -660,11 +674,15 @@ int main(int argc, char const *argv[]) {
             return EXIT_FAILURE;
         }
 
+        // Copy list of Process to EDRRProcess
         edrr_processes = copy_list(processes->head);
 
         int length_of_edrr_processes = get_count(edrr_processes);
 
-        if (length_of_edrr_processes < 1) {
+        // Check the length of EDRRProcesses against 
+        // the length of Processes to detect errors in 
+        // copying of list
+        if (length_of_edrr_processes != processes->size) {
             printf("\n\t[-] copy_list: Copying of Process list to EDRRProcess list failed.\n\n");
             return EXIT_FAILURE;
         }
@@ -672,20 +690,44 @@ int main(int argc, char const *argv[]) {
 
     edrr_processes_head = edrr_processes;
     //sort_processes_based_on_pid(&edrr_processes);
+
+    // To simulate real life scenario where it is not 
+    // possible for a process with an earlier arrival time 
+    // to enter the queue first.
     sort_processes_based_on_arrival_time(&edrr_processes);
 
-    // Loop till end of list
+    // Loop till end of EDRRProcess list
+    // Compute waiting time and turnaround time for each process accordingly 
     while (edrr_processes) {
         added_to_ready_queue = add_to_ready_queue(&edrr_processes, time_elapsed);
         
         if (added_to_ready_queue) {
+            // If new processes were added to ready queue, 
+            // calculate maximum_burst_time (BT_MAX)
+            // calculate time_quantum (QT) = 0.8 * BT_MAX
             maximum_burst_time = get_maximum_burst_time(edrr_processes_head);
             time_quantum = 0.8 * maximum_burst_time;
+
+            // Reset pointer to point to head 
+            // so as to check all the processes 
+            // that have been already iterated through 
+            // but not executed.
+            // 
+            // This is to address the case when a process 
+            // that was previously changed to waiting state 
+            // can now be executed due to the new QT calculated.
             edrr_processes = edrr_processes_head;
             continue;
         }
 
         if (edrr_processes->queue == READY || edrr_processes->queue == WAITING) {
+            // Execute the process only if the process is in ready or waiting states
+            // (Else, the process has either terminated or it is a new process)
+
+            // If process burst time <= QT (0.8 * BT_MAX)
+            //      Execute
+            // Else
+            //      Put process on hold
             if (edrr_processes->burst_time <= time_quantum) {
                 edrr_processes->response_time = time_elapsed - edrr_processes->arrival_time;
                 edrr_processes->turnaround_time = time_elapsed + edrr_processes->burst_time - edrr_processes->arrival_time;
@@ -695,10 +737,15 @@ int main(int argc, char const *argv[]) {
                 
                 edrr_processes->burst_time = 0;
                 edrr_processes->queue = TERMINATED;
+
+                // Check if this is the last process to be executed
                 if (there_are_new_processes(edrr_processes_head) || 
                     there_are_processes_ready(edrr_processes_head) || 
                     there_are_processes_waiting(edrr_processes_head)) {
-                    
+
+                    // Keep incrementing num_of_context_switches 
+                    // after executing each process, so long 
+                    // this process is not the last to be executed.
                     num_of_context_switches++;
                 }
             } else {
@@ -706,16 +753,28 @@ int main(int argc, char const *argv[]) {
             }
         }
 
+        // Set pointer to point to the next process
         edrr_processes = edrr_processes->next;
         if (!edrr_processes && !there_are_processes_waiting(edrr_processes_head) && 
             !there_are_processes_ready(edrr_processes_head) && 
             there_are_new_processes(edrr_processes_head)) {
             
+            // In the event that at any point in time, 
+            // there are no processes in ready or waiting 
+            // but there are still processes that needs to be executed
+            //
+            // In this case, for simulation purposes, 
+            // set time_elapsed to the minimum arrival time of 
+            // the processes that have not yet executed.
             time_elapsed = get_minimum_arrival_time(edrr_processes_head);
             edrr_processes = edrr_processes_head;
             continue;
         }
         if (!edrr_processes && there_are_processes_waiting(edrr_processes_head)) {
+            // If there are only processes in waiting (meaning burst time of these 
+            // processes are more than 0.8 * BT_MAX),
+            // recalculate QT = BT_MAX
+            // and loop through all the processes to finish executing them.
             edrr_processes = edrr_processes_head;
             time_quantum = maximum_burst_time;
         }
@@ -725,6 +784,7 @@ int main(int argc, char const *argv[]) {
 
     edrr_processes = edrr_processes_head;
 
+    // Sort EDRRProcess list based on pid for printing purposes.
     sort_processes_based_on_pid(&edrr_processes_head);
 
     printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\tResponse time\n");
@@ -742,6 +802,8 @@ int main(int argc, char const *argv[]) {
 
     copy_list_back(&process, edrr_processes);
 
+    // Print Process list just to check if the copying of list 
+    // worked properly.
     printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\tResponse time\n");
     printf("\t-----------\t------------\t----------\t------------\t----------------\t-------------\n");
 
@@ -751,8 +813,10 @@ int main(int argc, char const *argv[]) {
         process = process->next;
     }
 
+    // Write results to results.csv
     write_results("results.csv", processes);
 
+    // Perform memory cleanup
     free_edrr_process_list(edrr_processes_head);
     free_process_list(processes->head);
     free(processes);
