@@ -398,7 +398,7 @@ void print_results(Processes* processes)
         printf("| %d\t| %d\t| %d\t| %d\t| %d\t| %d\t| %d|\n", current->pid, current->cpu_time, current->arrival_time, current->turnaround_time, current->waiting_time, current->response_time, current->priority);
         current = current->next;
     }
-    printf("--------------------\n");
+    printf("--------------------------------------------------------\n");
     printf("Number of context switches %d\n", processes->context_switches); // ToDo: Change this to real ctx 
 }
 

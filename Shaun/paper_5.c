@@ -25,34 +25,41 @@ int main(int argc, char *argv[]) {
 	if (argc == 1) // command line mode
 	{
 		//take in processes
-		int number_of_processes, time_quantum;
+		int number_of_processes, time_quantum = 0;
 
 		printf("Number of processes? ");
 		scanf("%d", &number_of_processes);
+		processes->size = number_of_processes;
 
 		for (int i = 0; i < number_of_processes; i++)
 		{
+			int tmp = 0;
+			int pid = i + 1;
 			Process * new_process = (Process*) calloc(0, sizeof(Process));
-			printf("Burst time for process %d :", i+1);
-			scanf("%d", &new_process->burst_time);
+			printf("Burst time for process %d : ", pid);
+			scanf("%d", &tmp);
+			memcpy(&new_process->burst_time, &tmp, sizeof(int));
 
-			printf("Arrival time for process %d :", i+1);
-			scanf("%d", &new_process->arrival_time);
+			printf("Arrival time for process %d : ", pid);
+			scanf("%d", &tmp);
+			memcpy(&new_process->arrival_time, &tmp, sizeof(int));
 
 			printf("\nPriority for processes must be 1, 2 or 3\n");
-			printf("Priority time for process %d :", i+1);
-			scanf("%d", &new_process->priority);
+			printf("Priority for process %d : ", pid);
+			scanf("%d", &tmp);
+			memcpy(&new_process->priority, &tmp, sizeof(int));
 
-			new_process->cpu_time = new_process->burst_time;
-			new_process->pid = i + 1;
-
+			memcpy(&new_process->cpu_time, &new_process->burst_time, sizeof(int));
+			memcpy(&new_process->pid, &pid, sizeof(int));		
+		
 			insert_node(processes, new_process);
 		}
 		
-		print_results(processes);
-		processes->size = number_of_processes;
 		printf("Enter time quantum: ");
 		scanf("%d", &time_quantum);
+		printf("Time quantum entered: %d\n", time_quantum);
+		print_results(processes);
+		processes->size = number_of_processes;
 
 		improved_round_robin(processes, time_quantum);
 
