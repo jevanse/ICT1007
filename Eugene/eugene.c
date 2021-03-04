@@ -12,6 +12,8 @@ typedef struct process{
   int waiting_time;
   int turnaround_time;
   int burst_time_dup;
+  int response_time;
+  int run_counter;
 
 
 } Process;
@@ -187,7 +189,7 @@ printf("\n1st next start time %d", next_exe_time_start);
 for(i = 0; i <n; i++){
   printf("\nArrival times ascending: %d", arr_times[i]);
 }
-
+ 
 
 
 
@@ -195,6 +197,8 @@ for(i = 0; i <n; i++){
 
 	int timer = 0;
   int new_counter = 0;
+  int cxt_switches =0;
+  int init_proc = 0;
 
 	while (timer <= total_burst_time + arr_times[n-1]){
     
@@ -241,9 +245,10 @@ for(i = 0; i <n; i++){
           
       }
     }
+   
 
     if(process[ready_q[0]-1].burst_time == 0  && ready_q[0] != 0){
-      
+
         
         printf("Process %d has finished execution", process[ready_q[0]-1].process_number);
         next_exe_time_start = timer + TQ;
@@ -282,11 +287,14 @@ for(i = 0; i <n; i++){
     
         printf("\n%d", ready_q[i]);
       }
+      if(ready_q[0]!=0){
+        cxt_switches++;
+      }
   }
   
     
     else if(timer == next_exe_time_start && process[ready_q[0]].process_number != 0){
-
+       init_proc = ready_q[0];
        if(new_counter > 0){
       printf("Process is added before this, need to sort");
                     for (int i = 0; i < n; ++i) {
@@ -303,6 +311,9 @@ for(i = 0; i <n; i++){
     }
     else{
       shift_left(ready_q, n);
+    }
+    if(init_proc != ready_q[0]){
+      cxt_switches++;
     }
        
           printf("Next start time %d", next_exe_time_start);
@@ -326,6 +337,8 @@ for(i = 0; i <n; i++){
   }
 
     }
+  
+  
    
   for (i = 0; i < n; i++){
   if(process[i].process_number != ready_q[0] && process[i].burst_time != 0){
@@ -348,11 +361,5 @@ for(i = 0; i <n; i++){
 awt = total_waiting_time/n;
 printf("\nAvg waiting time %f",total_waiting_time/n);
 printf("\nAvg turnaround time %f",total_turnaround_time/n);
+printf("\nNumber of context switches %d",cxt_switches);
 }
- 
-
-
-
-    
-  
-
