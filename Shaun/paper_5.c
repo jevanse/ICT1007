@@ -38,19 +38,19 @@ int main(int argc, char *argv[]) {
 			Process * new_process = (Process*) calloc(0, sizeof(Process));
 			printf("Burst time for process %d : ", pid);
 			scanf("%d", &tmp);
-			memcpy(&new_process->burst_time, &tmp, sizeof(int));
+			new_process->burst_time = tmp;
 
 			printf("Arrival time for process %d : ", pid);
 			scanf("%d", &tmp);
-			memcpy(&new_process->arrival_time, &tmp, sizeof(int));
+			new_process->arrival_time = tmp;
 
 			printf("\nPriority for processes must be 1, 2 or 3\n");
 			printf("Priority for process %d : ", pid);
 			scanf("%d", &tmp);
-			memcpy(&new_process->priority, &tmp, sizeof(int));
+			new_process->priority = tmp;
 
-			memcpy(&new_process->cpu_time, &new_process->burst_time, sizeof(int));
-			memcpy(&new_process->pid, &pid, sizeof(int));		
+			new_process->cpu_time = new_process->burst_time;
+			new_process->pid = pid;		
 		
 			insert_node(processes, new_process);
 		}
@@ -66,12 +66,37 @@ int main(int argc, char *argv[]) {
 		print_results(processes);
 		return 0;
 	}
+	else if (argc == 2)
+	{
+		char * filename = argv[1];
+		Processes * processes = (Processes *) malloc(sizeof(Processes));
+
+		init_processes(processes);
+		get_processes(filename, &processes);
+		int quantum = 500;
+		
+		improved_round_robin(processes, quantum);
+		char * outfile_name = (char*) malloc(sizeof(char) * 100);
+		memcpy(outfile_name, filename, strlen(filename)-4);
+		memcpy(outfile_name+strlen(filename)-4, ".csv", 4);
+		if (write_results(outfile_name, processes) == -1)
+		{
+			printf("Write file failed\n");
+			return -1;
+		}
+		printf("Write file succeeded\n");
+		return 0;
+
+		
+
+	}
 	else if (argc != 2)
 	{
 		printf("Usage: paper_5 <file_name>");
 		return -1;
 		// generate time quantum that will be used 
 	}
+	return 0;
 	
 }
 

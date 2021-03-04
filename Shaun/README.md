@@ -1,9 +1,10 @@
 # ICT1007 Paper 5
 
 ### TODO:
-- Commandline argument mode to do manual testing or file testing
+- Testing
 - Cleanup 
 - Documentation
+
 
 
 ### Implementation
