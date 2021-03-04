@@ -13,7 +13,7 @@ typedef struct process{
   int turnaround_time;
   int burst_time_dup;
   int response_time;
-  int run_counter;
+  int first_run_counter;
 
 
 } Process;
@@ -134,6 +134,7 @@ for(i = 0; i < n; i++){
 
 for(i = 0; i < n; i++){
     	process[i].burst_time_dup = process[i].burst_time;
+      process[i].first_run_counter =0;
   }
 
 
@@ -345,7 +346,13 @@ for(i = 0; i <n; i++){
     process[i].waiting_time += 1; 
   }
 }
+  if(ready_q[0]!=0){
+        process[ready_q[0]-1].first_run_counter++;
+      }
 
+  if(process[ready_q[0]-1].first_run_counter == 1){
+    process[ready_q[0]-1].response_time = timer;
+  }
 	timer++;
 }
  
@@ -354,6 +361,7 @@ for(i = 0; i <n; i++){
   process[i].turnaround_time = process[i].waiting_time + process[i].burst_time_dup;
   printf("\nProcess %d waiting time %d",process[i].process_number ,process[i].waiting_time); 
   printf("\nProcess %d turnaround time %d",process[i].process_number ,process[i].turnaround_time); 
+  printf("\nProcess %d response time %d",process[i].process_number ,process[i].response_time); 
   total_waiting_time += process[i].waiting_time;
   total_turnaround_time += process[i].turnaround_time;
 }
