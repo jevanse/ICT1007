@@ -466,22 +466,31 @@ int main(int argc, char const *argv[]) {
     int maximum_burst_time = 0;
     float time_quantum = 0.0;
 
-    char *filename = NULL;
+    char *in_filename = NULL, *out_filename = NULL;
 
     // Filename can be entered as an argument
-    if (argc == 2) {
-        filename = (char *)calloc(1, strlen(argv[1]) + 1);
-        if (!filename) {
+    if (argc > 1) {
+        in_filename = (char *)calloc(1, strlen(argv[1]) + 1);
+        if (!in_filename) {
             printf("\t[-] main: Unable to allocate memory.\n\n");
             return MEM_ALLOC_FAILED;
         }
-        strcpy(filename, argv[1]);
+        strcpy(in_filename, argv[1]);
     }
+
+	if (argc > 2) {
+		out_filename = (char *)calloc(1, strlen(argv[2]) + 1);
+		if (!out_filename) {
+            printf("\t[-] main: Unable to allocate memory.\n\n");
+            return MEM_ALLOC_FAILED;
+		}
+		strcpy(out_filename, argv[2]);
+	}
 
     printf("\n");
 
-    if (!filename) {
-        // No filename given
+    if (!in_filename) {
+        // No in_filename given
         // Give users the option of: 
         // 1. entering file containing process params
         // 2. entering these params directly to program
@@ -515,32 +524,32 @@ int main(int argc, char const *argv[]) {
         printf("\n\t[+] You have selected '%d'.\n", user_option);
         
         if (user_option == 1) {
-            // Ask for filename
-            filename = (char *)calloc(1, MAX_FILE_PATH + 2);
-            if (!filename) {
+            // Ask for in_filename
+            in_filename = (char *)calloc(1, MAX_FILE_PATH + 2);
+            if (!in_filename) {
                 printf("\n\t[-] main: Unable to allocate memory.\n\n");
                 return MEM_ALLOC_FAILED;
             }
             do {
-                printf("\n\tEnter path to file (press '0' to exit): ");
-                fgets(filename, MAX_FILE_PATH, stdin);
+                printf("\n\tEnter path to file (press '-1' to exit): ");
+                fgets(in_filename, MAX_FILE_PATH, stdin);
 
-                if (filename[strlen(filename) - 1] == '\n') {
-                    filename[strlen(filename) - 1] = '\0';
+                if (in_filename[strlen(in_filename) - 1] == '\n') {
+                    in_filename[strlen(in_filename) - 1] = '\0';
                 }
 
-                if (strncmp(filename, "-1", strlen("-1")) == 0) {
+                if (strncmp(in_filename, "-1", strlen("-1")) == 0) {
                     printf("\n\t[i] User pressed '-1'. Exiting program...\n\n");
-                    free(filename);
+                    free(in_filename);
                     return EXIT_SUCCESS;
                 }
-                if (strlen(filename) == 0) {
+                if (strlen(in_filename) == 0) {
                     printf("\n\t[-] Please enter a valid file path.\n");
-                    free(filename);
+                    free(in_filename);
                 }
-            } while(strlen(filename) == 0);
+            } while(strlen(in_filename) == 0);
 
-            printf("\n\t[+] You have entered '%s'.\n", filename);
+            printf("\n\t[+] You have entered '%s'.\n", in_filename);
         } else if (user_option == 2) {
             // Ask for params
             int num_of_processes;
@@ -645,17 +654,17 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    if (filename) {
+    if (in_filename) {
         // Read in and get Process list
-        int get_process_status = get_processes(filename, &processes);
+        int get_process_status = get_processes(in_filename, &processes);
 
         if (get_process_status == FILE_READ_FAILED) {
-            printf("\n\t[-] get_process_status: Unable to read %s.\n\n", filename);
-            free(filename);
+            printf("\n\t[-] get_process_status: Unable to read %s.\n\n", in_filename);
+            free(in_filename);
             return EXIT_FAILURE;
         }
 
-        free(filename);
+        free(in_filename);
 
         if (get_process_status == MEM_ALLOC_FAILED) {
             printf("\n\t[-] get_process_status: Unable to allocate memory for reading file.\n\n");
@@ -813,8 +822,36 @@ int main(int argc, char const *argv[]) {
         process = process->next;
     }
 
+	if (!out_filename) {
+		// Ask for out_filename
+		out_filename = (char *)calloc(1, MAX_FILE_PATH + 2);
+		if (!out_filename) {
+			printf("\n\t[-] main: Unable to allocate memory.\n\n");
+			return MEM_ALLOC_FAILED;
+		}
+		do {
+			printf("\n\tEnter path of file to save the results to (press '-1' to exit): ");
+			fgets(out_filename, MAX_FILE_PATH, stdin);
+
+			if (out_filename[strlen(out_filename) - 1] == '\n') {
+				out_filename[strlen(out_filename) - 1] = '\0';
+			}
+
+			if (strncmp(out_filename, "-1", strlen("-1")) == 0) {
+				printf("\n\t[i] User pressed '-1'. Exiting program...\n\n");
+				free(out_filename);
+				return EXIT_SUCCESS;
+			}
+			if (strlen(out_filename) == 0) {
+				printf("\n\t[-] Please enter a valid file path.\n");
+				free(out_filename);
+			}
+		} while(strlen(out_filename) == 0);
+	}
+
+	printf("\n\t[i] Saving results to '%s'...\n", out_filename);
     // Write results to results.csv
-    write_results("results.csv", processes);
+    write_results(out_filename, processes);
 
     // Perform memory cleanup
     free_edrr_process_list(edrr_processes_head);
