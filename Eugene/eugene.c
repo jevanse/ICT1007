@@ -361,7 +361,7 @@ for(i = 0; i <n; i++){
   process[i].turnaround_time = process[i].waiting_time + process[i].burst_time_dup;
   printf("\nProcess %d waiting time %d",process[i].process_number ,process[i].waiting_time); 
   printf("\nProcess %d turnaround time %d",process[i].process_number ,process[i].turnaround_time); 
-  printf("\nProcess %d response time %d",process[i].process_number ,process[i].response_time); 
+  printf("\nProcess %d response time %d",process[i].process_number ,process[i].response_time-process[i].arrival_time); 
   total_waiting_time += process[i].waiting_time;
   total_turnaround_time += process[i].turnaround_time;
 }
