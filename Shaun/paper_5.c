@@ -54,13 +54,11 @@ int main(int argc, char *argv[]) {
 		
 			insert_node(processes, new_process);
 		}
-		
-		printf("Enter time quantum: ");
-		scanf("%d", &time_quantum);
-		printf("Time quantum entered: %d\n", time_quantum);
+		printf("hello\n");
+		time_quantum = generate_dynamic_timequantum(processes);
+		printf("time_quantum generated: %d\n", time_quantum);
 		print_results(processes);
-		processes->size = number_of_processes;
-
+	
 		improved_round_robin(processes, time_quantum);
 
 		print_results(processes);
@@ -73,9 +71,9 @@ int main(int argc, char *argv[]) {
 
 		init_processes(processes);
 		get_processes(filename, &processes);
-		int quantum = 500;
 		
-		improved_round_robin(processes, quantum);
+		int time_quantum  = generate_dynamic_timequantum(processes);
+		improved_round_robin(processes, time_quantum);
 		char * outfile_name = (char*) malloc(sizeof(char) * 100);
 		memcpy(outfile_name, filename, strlen(filename)-4);
 		memcpy(outfile_name+strlen(filename)-4, ".csv", 4);

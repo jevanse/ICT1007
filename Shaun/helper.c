@@ -189,22 +189,22 @@ irr_process * dequeue(irr_process * process_queue, int * front, int * rear)
 	return tmp;
 }
 
-void swap(Process *xp, Process *yp)  
+void swap(int *xp, int *yp)  
 {  
-    Process temp = *xp;  
+    int temp = *xp;  
     *xp = *yp;  
     *yp = temp;  
 }  
   
 // A function to implement bubble sort  
-void bubbleSort(Process arr[], int n)  
+void bubbleSort(int arr[], int n)  
 {  
     int i, j;  
     for (i = 0; i < n-1; i++)      
       
     // Last i elements are already in place  
     for (j = 0; j < n-i-1; j++)  
-        if (arr[j].burst_time > arr[j+1].burst_time)  
+        if (arr[j] > arr[j+1])  
             swap(&arr[j], &arr[j+1]);  
 }  
 
@@ -402,3 +402,24 @@ void print_results(Processes* processes)
     printf("Number of context switches %d\n", processes->context_switches); // ToDo: Change this to real ctx 
 }
 
+int generate_dynamic_timequantum(Processes * processes)
+{
+    Process * current = processes->head;
+    int * burst_times = (int *) calloc(processes->size, sizeof(int));
+    for (int i = 0; i < processes->size; i++)
+    {
+        printf("Inside loop, ctr %d\n", i);
+        burst_times[i] = current->burst_time;
+        current = current->next;
+        if (current == NULL)
+            break;
+    }
+    // Sort burst times 
+    printf("Before bubbleSort\n");
+    bubbleSort(burst_times, processes->size);
+    printf("After bubbleSort\n");
+    // Find median 
+    int median = processes->size * 0.8;
+    printf("Median found: %d\n", median);
+    return burst_times[median];
+}

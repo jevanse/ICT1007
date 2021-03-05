@@ -24,8 +24,8 @@ typedef struct irr_struct
 } irr_process;
 
 
-void swap(Process*, Process*);
-void bubbleSort(Process arr[], int);
+void swap(int*, int*);
+void bubbleSort(int arr[], int n);
 int init(Processes * processes);
 irr_process * init_irr_processes(Process * head, int number_of_processes);
 irr_process * init_queue(int);
@@ -41,3 +41,4 @@ irr_process * dequeue(irr_process * process_queue, int * front, int * rear);
 void check_for_idling(irr_process * head, int *time_elapsed);
 void print_processes_in_queue(irr_process * process_queue, int front, int rear);
 void print_results(Processes* processes);
+int generate_dynamic_timequantum(Processes * processes);
