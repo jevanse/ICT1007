@@ -341,7 +341,7 @@ void generate_time_quantum(irr_process * head, int time_quantum)
 void check_for_idling(irr_process * head, int *time_elapsed)
 {
     irr_process * current = head;
-    int time_skip = INT32_MAX;
+    int time_skip = 2 ^ 32;
     while (current)
     {
         if (current->done)
@@ -419,7 +419,7 @@ int generate_dynamic_timequantum(Processes * processes)
     bubbleSort(burst_times, processes->size);
     printf("After bubbleSort\n");
     // Find median 
-    int median = processes->size * 0.8;
+    int median = (processes->size * 0.8) -1;
     printf("Median found: %d\n", median);
     return burst_times[median];
 }

@@ -16,11 +16,6 @@ Todo:
 int main(int argc, char *argv[]) {
 	Processes * processes = (Processes *) malloc(sizeof(Processes));
 	init_processes(processes);
-	//init(processes);
-	//improved_round_robin(processes, 500);
-	//print_results(processes);
-	
-	//int quantum = generate_time_quantum(processes); //generated time quantum can be int for now
 	
 	if (argc == 1) // command line mode
 	{
@@ -29,13 +24,15 @@ int main(int argc, char *argv[]) {
 
 		printf("Number of processes? ");
 		scanf("%d", &number_of_processes);
-		processes->size = number_of_processes;
+
+		printf("Time quantum (if tq = 0, the program will generate the time quantum) ?: ");
+		scanf("%d", &time_quantum);
 
 		for (int i = 0; i < number_of_processes; i++)
 		{
 			int tmp = 0;
 			int pid = i + 1;
-			Process * new_process = (Process*) calloc(0, sizeof(Process));
+			Process * new_process = (Process*) calloc(1, sizeof(Process));
 			printf("Burst time for process %d : ", pid);
 			scanf("%d", &tmp);
 			new_process->burst_time = tmp;
@@ -55,8 +52,12 @@ int main(int argc, char *argv[]) {
 			insert_node(processes, new_process);
 		}
 		printf("hello\n");
-		time_quantum = generate_dynamic_timequantum(processes);
-		printf("time_quantum generated: %d\n", time_quantum);
+		if (!time_quantum)
+		{
+			time_quantum = generate_dynamic_timequantum(processes);
+			printf("time_quantum generated: %d\n", time_quantum);
+		}
+		printf("Check the processes!\n");
 		print_results(processes);
 	
 		improved_round_robin(processes, time_quantum);
@@ -67,9 +68,6 @@ int main(int argc, char *argv[]) {
 	else if (argc == 2)
 	{
 		char * filename = argv[1];
-		Processes * processes = (Processes *) malloc(sizeof(Processes));
-
-		init_processes(processes);
 		get_processes(filename, &processes);
 		
 		int time_quantum  = generate_dynamic_timequantum(processes);
@@ -103,7 +101,7 @@ int improved_round_robin(Processes * processes, int quantum)
 	//iterate through processes
 	irr_process * current = (irr_process* )malloc(sizeof(irr_process));
 	irr_process * tmp = (irr_process* )malloc(sizeof(irr_process));
-	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum = 0, number_of_completed_processes = 0, context_switches = 0;
+	int time_elapsed = 0, time_at_start_of_quantum = 0, time_quantum = 0, number_of_completed_processes = 0, context_switches = -1;
 	//irr_process * process_queue = init_queue(queue_size);
 	irr_process * head = init_irr_processes(processes->head, processes->size);
 	
@@ -134,7 +132,7 @@ int improved_round_robin(Processes * processes, int quantum)
 				current = tmp;
 			}
 
-			if (current->burst_time < current->time_quantum) 
+			if (current->burst_time <= current->time_quantum) 
 				time_quantum = current->burst_time;
 
 			else if (current->burst_time > current->time_quantum && 
@@ -164,6 +162,8 @@ int improved_round_robin(Processes * processes, int quantum)
 			{
 				set_completed_process_properties(processes->head, current, time_elapsed);
 				number_of_completed_processes++;
+				if (number_of_completed_processes == processes->size)
+					break;
 				current = current->next;
 				continue;
 			}
