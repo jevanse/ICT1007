@@ -329,6 +329,8 @@ void generate_time_quantum(irr_process * head, int time_quantum)
 	irr_process * curr = head;
     while (curr)
     {
+        if (curr->priority <= 0 || curr->priority > 3)
+            curr->priority = 2;
         if (curr->priority == LOW_PRIORITY)
             curr->time_quantum = time_quantum * 0.8;
         else if (curr->priority == MED_PRIORITY)
@@ -408,18 +410,22 @@ int generate_dynamic_timequantum(Processes * processes)
     int * burst_times = (int *) calloc(processes->size, sizeof(int));
     for (int i = 0; i < processes->size; i++)
     {
-        printf("Inside loop, ctr %d\n", i);
         burst_times[i] = current->burst_time;
         current = current->next;
         if (current == NULL)
             break;
     }
     // Sort burst times 
-    printf("Before bubbleSort\n");
+    
     bubbleSort(burst_times, processes->size);
-    printf("After bubbleSort\n");
+    
     // Find median 
     int median = (processes->size * 0.8) -1;
-    printf("Median found: %d\n", median);
+    if (median <= -1) //catch impossible edge cases
+    {
+        median = 0;
+    }
+    
+    printf("Returning burstime: %d\n", burst_times[median]);
     return burst_times[median];
 }

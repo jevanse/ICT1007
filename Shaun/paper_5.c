@@ -14,7 +14,7 @@ Todo:
 */
 
 int main(int argc, char *argv[]) {
-	Processes * processes = (Processes *) malloc(sizeof(Processes));
+	Processes * processes = (Processes *) calloc(1,sizeof(Processes));
 	init_processes(processes);
 	
 	if (argc == 1) // command line mode
@@ -51,7 +51,6 @@ int main(int argc, char *argv[]) {
 		
 			insert_node(processes, new_process);
 		}
-		printf("hello\n");
 		if (!time_quantum)
 		{
 			time_quantum = generate_dynamic_timequantum(processes);
@@ -67,8 +66,10 @@ int main(int argc, char *argv[]) {
 	}
 	else if (argc == 2)
 	{
+		printf("File mode.\n");
 		char * filename = argv[1];
-		get_processes(filename, &processes);
+		int res = get_processes(filename, &processes);
+		
 		
 		int time_quantum  = generate_dynamic_timequantum(processes);
 		improved_round_robin(processes, time_quantum);
