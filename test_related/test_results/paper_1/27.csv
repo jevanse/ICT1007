@@ -1,0 +1,7 @@
+pid, bursttime, arrivaltime, priority, turnaroundtime, waittime, responsetime, contextswitches
+,,,,,,,4
+1,550,0,3,550,0,0,
+2,800,200,1,1350,550,550,
+3,200,100,3,650,450,450,
+4,2600,400,2,5350,2750,2750,
+5,1600,0,2,3150,1550,1550,
