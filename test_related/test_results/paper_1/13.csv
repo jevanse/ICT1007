@@ -1,0 +1,8 @@
+pid, bursttime, arrivaltime, priority, turnaroundtime, waittime, responsetime, contextswitches
+,,,,,,,4
+1,"		45","		0","		0",45,0,0,
+2,"		90","		5","		0",293,203,203,
+3,"		70","		8","		0",200,130,130,
+4,"		38","		15","		0",68,30,30,
+5,"		55","		20","		0",118,63,63,
+; Process starvation of Process 2,,,,,,,
