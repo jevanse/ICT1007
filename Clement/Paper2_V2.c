@@ -51,9 +51,19 @@ struct processes* addToReadyQueue(struct processes *process_queue, struct proces
 
 			// Iterate old ready queue and add to new output
 			while(p-> next != NULL){
-				
-				p = p-> next;
+
+				Process *new_process = (Process*) calloc(1, (sizeof(Process)));
+
+					new_process-> pid = p-> pid;
+					new_process-> burst_time = p-> burst_time;
+					new_process-> arrival_time = p-> arrival_time;
+					new_process-> priority = p-> priority;
+
+				insert_node(out, new_process);
+					
+				p = p->next;
 			}
+
 			Process *new_process = (Process*) calloc(1, (sizeof(Process)));
 
 				new_process-> pid = p-> pid;
@@ -62,6 +72,7 @@ struct processes* addToReadyQueue(struct processes *process_queue, struct proces
 				new_process-> priority = p-> priority;
 
 			insert_node(out, new_process);
+			
 		}
 
 		// Step 2:	Add processes that have arrived to queue
@@ -259,24 +270,35 @@ struct processes SJF(struct processes *process_queue, int n){
 
 	// Run till all processes have been calculated
 	while(SJF_Results->size < process_queue-> size){
-		printf("\n\nCurrent Result output has %d elements\n\n", SJF_Results-> size);
+		printf("\n\nCurrent Result output has %d elements\nCurrent Ready Queue has %d elements\n\n", SJF_Results-> size, SJF_ReadyQueue-> size);
+		
 		// If there is something in the ready queue
 		if(SJF_ReadyQueue-> head != NULL){
 			printf("Accessing first element of ready queue\n\n");
 			// Start processing whatever is at the head of the ready queue
 			p = SJF_ReadyQueue-> head;
-			p-> waiting_time = ts - p-> arrival_time;
-			p-> turnaround_time = ts + p->burst_time;
 
+			// Allocate memory space for new process
+			Process *new_process = (Process*) calloc(1, (sizeof(Process)));
+
+				// Set Proccess properties
+				new_process-> pid = p-> pid;
+				new_process-> burst_time = p-> burst_time;
+				new_process-> arrival_time = p-> arrival_time;
+				new_process-> waiting_time = ts - p-> arrival_time;
+				new_process-> turnaround_time = ts + p-> burst_time;
+			
 			// Insert that process into the result linked list
-			insert_node(SJF_Results, p);
+			insert_node(SJF_Results, new_process);
 
 			// Increment the Time Stamp
-			ts = ts + p->burst_time;
+			ts = ts + new_process->burst_time;
 
 			// Remove the first element in the ready queue
 			SJF_ReadyQueue-> head = p-> next;
 			SJF_ReadyQueue-> size--;
+
+			printf("ready q decrement, Ready Queue size: %d\n", SJF_ReadyQueue-> size);
 
 		}else if(
 			(SJF_ReadyQueue-> size + SJF_Results-> size) 
@@ -296,6 +318,7 @@ struct processes SJF(struct processes *process_queue, int n){
 			printf("Checking for new arrivals\n");
 			// Check for new arrivals
 			SJF_ReadyQueue = addToReadyQueue(process_queue, SJF_ReadyQueue, last_update_ts, ts);
+			printf("after add to rdy q, Ready Queue size: %d\n", SJF_ReadyQueue-> size);
 			SJF_ReadyQueue = sortBurstTimes(SJF_ReadyQueue, SJF_ReadyQueue-> size);
 			last_update_ts = ts;
 		}
