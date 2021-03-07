@@ -393,15 +393,18 @@ struct processes KFactor(struct processes *process_queue, int n){
 	return *KFactor_Results;
 }
 
-void exportResults(struct processes *result, char dataset[3], char type[7]){
-	char *dir;
-	char *filename;
+void exportResults(struct processes *result, char *dataset, char *type){
+	char *dir = (char *) malloc(50);
+	char *filename = (char *)malloc(50);
 	struct process *p = result-> head;
 
 	FILE *fp;
 
 	printf("Setting up directory\n");
-	dir = strcat("test_related/test_results/paper_2/", type);
+	printf("%s\n", type);
+	dir = "test_related/test_results/paper_2/";
+	dir = strcat(dir, type);
+	printf("%s", dir);
 	dir = strcat(dir, "/");
 
 	printf("Setting Filename\n");
@@ -426,8 +429,9 @@ void exportResults(struct processes *result, char dataset[3], char type[7]){
 int main(){
 	int n;
 	char has_test_case;
-	char filename;
+	char *filename = (char *) malloc(50);
 	char *file_contents;
+	char *dir = (char *) malloc(1000);
 	struct process *p;
 	int temp;
 
@@ -441,16 +445,23 @@ int main(){
 
 	if(has_test_case == 'y'){
 		printf("Enter relative file path: ");
-		scanf("%s", &filename);
+		scanf("%s", filename);
 
-		printf("%s", &filename);
+		//printf("%s", filename);
 
-		read_file(&filename, &file_contents);
+		//read_file(&filename, &file_contents);
 
-		get_processes(&filename, &process_queue);
+		get_processes(filename, &process_queue);
 
 		p = process_queue->head;
 
+		// Check if anything was found
+		if(p == NULL){
+			printf("No testcases found\nExiting Application\n");
+			exit(EXIT_FAILURE);
+		}
+
+		// Debug
 		while(p != NULL){
 			printf("PID:%d, BT:%d, AT:%d, Prio:%d\n", p->pid, p->burst_time, p->arrival_time, p->priority);
 			p = p->next;
@@ -508,9 +519,30 @@ int main(){
 		p=p->next;
 	}
 
-	exit(EXIT_SUCCESS);
-
 	printf("Exporting SJF\n\n");
-	exportResults(&SJF_Results, strtok(&filename, "."), "SJF");
-	exportResults(&KFactor_Results, strtok(&filename, "."), "KFactor");
+	filename = strrchr(filename, '/') + 1;
+	filename = strtok(filename, ".");
+
+	int retcode;
+
+	// Write result for SJF
+	sprintf(dir, "test_related/test_results/paper_2/SJF/%s.csv", filename);
+	printf("%s", dir);
+	retcode = write_results(dir, &SJF_Results);
+
+	if(retcode == -1){
+		printf("File not created\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Write result for KFactor
+	sprintf(dir, "test_related/test_results/paper_2/KFactor/%s.csv", filename);
+	printf("%s", dir);
+	retcode = write_results(dir, &SJF_Results);
+
+	if(retcode == -1){
+		printf("File not created\n");
+		exit(EXIT_FAILURE);
+	}
+	exit(EXIT_SUCCESS);
 }
