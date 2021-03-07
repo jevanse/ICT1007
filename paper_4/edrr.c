@@ -397,6 +397,25 @@ int add_to_ready_queue(EDRRProcess **process, int time_elapsed) {
     return added_to_ready_queue;
 }
 
+int there_are_immediate_processes_in_queue(EDRRProcess *process, int time_elapsed) {
+    int immediate_process_in_queue = FALSE;
+    
+    if (!process) return FALSE;
+    
+    // Loop through processes
+    while(process) {
+        // if a new process has arrived,
+        // "add" it to ready queue
+        if (process->arrival_time <= time_elapsed &&
+            process->queue == NEW) {
+            return TRUE;
+        }
+        process = process->next;
+    }
+    
+    return FALSE;
+}
+
 /**
  * Returns a boolean indicating if there are processes 
  * in the ready queue
@@ -748,13 +767,14 @@ int main(int argc, char const *argv[]) {
                 edrr_processes->queue = TERMINATED;
 
                 // Check if this is the last process to be executed
-                if (there_are_new_processes(edrr_processes_head) || 
-                    there_are_processes_ready(edrr_processes_head) || 
-                    there_are_processes_waiting(edrr_processes_head)) {
+                if (there_are_processes_ready(edrr_processes_head) || 
+                    there_are_processes_waiting(edrr_processes_head) || 
+					there_are_immediate_processes_in_queue(edrr_processes_head, time_elapsed)) {
 
                     // Keep incrementing num_of_context_switches 
-                    // after executing each process, so long 
-                    // this process is not the last to be executed.
+                    // after executing each process, so long as
+                    // there is another process to be executed 
+					// IMMEDIATELY after this.
                     num_of_context_switches++;
                 }
             } else {
@@ -822,6 +842,8 @@ int main(int argc, char const *argv[]) {
         process = process->next;
     }
 
+    printf("\n\tNum of context switches: %d\n", num_of_context_switches);
+
 	if (!out_filename) {
 		// Ask for out_filename
 		out_filename = (char *)calloc(1, MAX_FILE_PATH + 2);
@@ -849,7 +871,7 @@ int main(int argc, char const *argv[]) {
 		} while(strlen(out_filename) == 0);
 	}
 
-	printf("\n\t[i] Saving results to '%s'...\n", out_filename);
+	printf("\n\t[i] Saving results to '%s'...\n\n", out_filename);
     // Write results to results.csv
     write_results(out_filename, processes);
 
@@ -857,8 +879,6 @@ int main(int argc, char const *argv[]) {
     free_edrr_process_list(edrr_processes_head);
     free_process_list(processes->head);
     free(processes);
-
-    printf("\n\tNum of context switches: %d\n\n", num_of_context_switches);
 
     return EXIT_SUCCESS;
 }
