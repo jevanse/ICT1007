@@ -56,8 +56,8 @@ int main(int argc, char *argv[]) {
 			time_quantum = generate_dynamic_timequantum(processes);
 			printf("time_quantum generated: %d\n", time_quantum);
 		}
-		printf("Check the processes!\n");
-		print_results(processes);
+		// printf("Check the processes!\n");
+		// print_results(processes);
 	
 		improved_round_robin(processes, time_quantum);
 
@@ -117,8 +117,9 @@ int improved_round_robin(Processes * processes, int quantum)
 		while (current)
 		{
 			//check for idle
+			bool idle = false;
 			time_quantum = 0;
-			check_for_idling(head, &time_elapsed);
+			idle = check_for_idling(head, &time_elapsed);
 			time_at_start_of_quantum = time_elapsed;
 			tmp = current;
 			if (current->done == true || current->arrival_time > time_elapsed)
@@ -148,7 +149,10 @@ int improved_round_robin(Processes * processes, int quantum)
 			else 
 				time_quantum = current->time_quantum;
 
-			context_switches++;
+			if (idle == false) 
+				context_switches++;
+			
+			
 			time_elapsed += time_quantum;
 			current->burst_time -= time_quantum;
 

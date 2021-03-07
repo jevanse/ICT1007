@@ -340,10 +340,11 @@ void generate_time_quantum(irr_process * head, int time_quantum)
         curr = curr->next;
     }
 }
-void check_for_idling(irr_process * head, int *time_elapsed)
+bool check_for_idling(irr_process * head, int *time_elapsed)
 {
     irr_process * current = head;
     int time_skip = 2 ^ 32;
+    bool return_val = false;
     while (current)
     {
         if (current->done)
@@ -353,16 +354,18 @@ void check_for_idling(irr_process * head, int *time_elapsed)
         }
             
         if (current->arrival_time <= *time_elapsed)
-            return;
+            return return_val;
         if (current->done == false && current->arrival_time < time_skip)
         {
             //set time_skip to smallest arrival time
             time_skip = current->arrival_time;
+            return_val = true;
         }
         current = current->next;
     }
 
     *time_elapsed = time_skip;
+    return return_val;
     //printf("Time skipped to: %d\n", time_skip);
 }
 
@@ -393,15 +396,15 @@ void print_processes_in_queue(irr_process * process_queue, int front, int rear)/
 void print_results(Processes* processes)
 {
     Process * current = processes->head;
-    printf("| PID | Burst time | Arrival Time | TurnAroundTime | Waiting Time | Response Time | Priority \n");
+    printf("| PID | Burst time | Arrival Time | Turn Around Time | Waiting Time | Response Time | Priority |\n");
 	//iterate through processes and print results into a table
     while (current)
     {
-        printf("| %d\t| %d\t| %d\t| %d\t| %d\t| %d\t| %d|\n", current->pid, current->cpu_time, current->arrival_time, current->turnaround_time, current->waiting_time, current->response_time, current->priority);
+        printf("| %3d | %10d | %12d | %16d | %12d | %13d | %8d |\n", current->pid, current->cpu_time, current->arrival_time, current->turnaround_time, current->waiting_time, current->response_time, current->priority);
         current = current->next;
     }
-    printf("--------------------------------------------------------\n");
-    printf("Number of context switches %d\n", processes->context_switches); // ToDo: Change this to real ctx 
+    printf("------------------------------------------------------------------------------------------------\n");
+    printf("\nNumber of context switches : %d\n", processes->context_switches);
 }
 
 int generate_dynamic_timequantum(Processes * processes)

@@ -38,7 +38,7 @@ void add_arriving_process(irr_process * head, irr_process * process_queue,int * 
 void check_queue_for_low_burst_time_proc(irr_process * process_queue, int * front, int * back, int queue_size,int time_quantum);
 void set_completed_process_properties(Process * head, irr_process * process, int exit_time);
 irr_process * dequeue(irr_process * process_queue, int * front, int * rear);
-void check_for_idling(irr_process * head, int *time_elapsed);
+bool check_for_idling(irr_process * head, int *time_elapsed);
 void print_processes_in_queue(irr_process * process_queue, int front, int rear);
 void print_results(Processes* processes);
 int generate_dynamic_timequantum(Processes * processes);
