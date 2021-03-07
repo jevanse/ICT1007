@@ -343,7 +343,7 @@ void generate_time_quantum(irr_process * head, int time_quantum)
 bool check_for_idling(irr_process * head, int *time_elapsed)
 {
     irr_process * current = head;
-    int time_skip = 2 ^ 32;
+    int time_skip = INT_MAX;
     bool return_val = false;
     while (current)
     {

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 #include "../test_related/algorithm_testing.h"
 
 #define LOW_PRIORITY 1
