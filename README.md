@@ -2,7 +2,7 @@
 
 Tasks are first sorted by arrival time.
 Tasks that have arrived in the ready queue are then split into either a light queue or heavy queue
-Tasks that have a burst time less than or equals the median burst time of tasks in the ready queue gets moved to the light queue
+Tasks that have a burst time less than the median burst time of tasks in the ready queue gets moved to the light queue
 Tasks that have a burst time more than the median burst time of tasks in the ready queue gets moved to the heavy queue
 
 Program will keep running until the waiting queue has been emptied
