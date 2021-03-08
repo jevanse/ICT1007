@@ -19,7 +19,7 @@ typedef struct process
 
 Process;
 
-/* Helper functions to assist with the algorithm */
+/*Helper functions to assist with the algorithm */
 
 void remove_element(int array[], int element, int array_length)
 {
@@ -285,7 +285,10 @@ int main(void)
 				printf("\nReady Queue:\n");
 				for (i = 0; i < n; i++)
 				{
-					printf("\t%d", ready_q[i]);
+					if (ready_q[i] != 0)
+					{
+						printf("\t%d", ready_q[i]);
+					}
 				}
 			}
 
@@ -346,7 +349,10 @@ int main(void)
 				printf("\nReady Queue:\n");
 				for (i = 0; i < n; i++)
 				{
-					printf("\t%d", ready_q[i]);
+					if (ready_q[i] != 0)
+					{
+						printf("\t%d", ready_q[i]);
+					}
 				}
 			}
 		}
@@ -375,7 +381,10 @@ int main(void)
 			printf("\nReady Queue:\n");
 			for (i = 0; i < n; i++)
 			{
-				printf("\t%d", ready_q[i]);
+				if (ready_q[i] != 0)
+				{
+					printf("\t%d", ready_q[i]);
+				}
 			}
 		}
 
@@ -386,15 +395,18 @@ int main(void)
 	{
 		process[i].waiting_time -= process[i].arrival_time;
 		process[i].turnaround_time = process[i].waiting_time + process[i].burst_time_dup;
-		printf("\nProcess %d waiting time %d", process[i].process_number, process[i].waiting_time);
-		printf("\nProcess %d turnaround time %d", process[i].process_number, process[i].turnaround_time);
-		printf("\nProcess %d response time %d", process[i].process_number, process[i].response_time - process[i].arrival_time);
+		process[i].response_time = process[i].response_time - process[i].arrival_time;
 		total_waiting_time += process[i].waiting_time;
 		total_turnaround_time += process[i].turnaround_time;
+    printf("Process %d \t waiting time: %d \t turnaround time: %d \t response time time: %d\n", i + 1, process[i].waiting_time, process[i].turnaround_time, process[i].response_time);
 	}
 
+
+
+
+
 	awt = total_waiting_time / n;
-	printf("\nAvg waiting time %f", total_waiting_time / n);
-	printf("\nAvg turnaround time %f", total_turnaround_time / n);
+	printf("\nAverage waiting time %f", total_waiting_time / n);
+	printf("\nAverage turnaround time %f", total_turnaround_time / n);
 	printf("\nNumber of context switches %d", cxt_switches);
 }
