@@ -1,0 +1,7 @@
+pid, bursttime, arrivaltime, priority, turnaroundtime, waittime, responsetime, contextswitches
+,,,,,,,4
+1, 9, 1, 1, 9, 0, 0
+2, 9, 2, 1, 17, 8, 8
+3, 9, 3, 1, 25, 16, 16
+4, 9, 4, 2, 33, 24, 24
+5, 9, 5, 3, 41, 32, 32
