@@ -140,7 +140,8 @@ int main(){
               light_queue->front->response_time = total_turnaround - light_queue->front->arrival;
             }
             light_queue->front->turnaround_time = total_turnaround;
-            light_queue->front->turnaround_time += mbt; // Adds the time quantum into turnaround time      
+            light_queue->front->turnaround_time += mbt; // Adds the time quantum into turnaround time 
+            light_queue->front->waiting_time = total_turnaround - light_queue->front->arrival;     
             light_queue->front->current_burst -= mbt; // Subtract current burst time by time quantum
             total_turnaround = light_queue->front->turnaround_time;
             enQueue(light_queue, light_queue->front->pid, light_queue->front->arrival,  light_queue->front->burst, light_queue->front->current_burst, light_queue->front->turnaround_time, light_queue->front->waiting_time, light_queue->front->response_time); // Adds the process to the back of the queue   
@@ -175,6 +176,7 @@ int main(){
             }
             heavy_queue->front->turnaround_time = total_turnaround;
             heavy_queue->front->turnaround_time += mbt; // Adds time quantum to process turnaround time
+            heavy_queue->front->waiting_time = total_turnaround - heavy_queue->front->arrival;
             heavy_queue->front->current_burst -= mbt; // Subtract time quantum from process remaining burst time
             total_turnaround = heavy_queue->front->turnaround_time;
             enQueue(heavy_queue, heavy_queue->front->pid, heavy_queue->front->arrival, heavy_queue->front->burst, heavy_queue->front->current_burst, heavy_queue->front->turnaround_time, heavy_queue->front->waiting_time, heavy_queue->front->response_time); // Adds the process to the end of heavy queue      
@@ -336,7 +338,7 @@ float findMedium(struct queue *q){
 // Splits the ready queue into two separate queue (light, heavy)
 void splitQueue(struct queue *q, float medium, struct queue *light_queue, struct queue *heavy_queue){
   while(q->front != NULL){
-    if(q->front->burst < medium){
+    if(q->front->burst <= medium){
       enQueue(light_queue, q->front->pid, q->front->arrival, q->front->burst, q->front->current_burst, q->front->turnaround_time, q->front->waiting_time, q->front->response_time);
       light_queue->size++; 
       deQueue(q);
