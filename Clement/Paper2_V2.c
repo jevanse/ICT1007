@@ -287,6 +287,7 @@ struct processes SJF(struct processes *process_queue, int n){
 				new_process-> arrival_time = p-> arrival_time;
 				new_process-> waiting_time = ts - p-> arrival_time;
 				new_process-> turnaround_time = ts + p-> burst_time;
+				new_process-> response_time = new_process-> waiting_time;
 			
 			// Insert that process into the result linked list
 			insert_node(SJF_Results, new_process);
@@ -324,6 +325,7 @@ struct processes SJF(struct processes *process_queue, int n){
 		}
 	}
 
+	SJF_Results-> context_switches = 0;
 	return *SJF_Results;
 }
 
@@ -383,6 +385,7 @@ struct processes KFactor(struct processes *process_queue, int n){
 			
 			p-> waiting_time = ts - p-> arrival_time;
 			p-> turnaround_time = ts + p->burst_time;
+			p-> response_time = p-> waiting_time;
 
 			insert_node(KFactor_Results, p);
 
@@ -413,6 +416,7 @@ struct processes KFactor(struct processes *process_queue, int n){
 			last_update_ts = ts;
 		}
 	}
+	KFactor_Results-> context_switches = 0;
 	return *KFactor_Results;
 }
 
