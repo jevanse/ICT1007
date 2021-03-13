@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-/*Process struct */
-
-typedef struct process
+/*Process struct, defining properties of a process */
+typedef struct process 
 {
 	int process_number;
 	int burst_time;
@@ -19,8 +18,11 @@ typedef struct process
 
 Process;
 
-/*Helper functions to assist with the algorithm */
 
+/* Helper functions to assist with the algorithm */
+
+
+/* Function to remove process from queue */
 void remove_element(int array[], int element, int array_length)
 {
 	for (int i = 0; i < array_length; i++)
@@ -32,6 +34,7 @@ void remove_element(int array[], int element, int array_length)
 	}
 }
 
+/* Function that moves the processes in the queue up */
 void shift_left(int array[], int n)
 {
 	int temp, lol;
@@ -56,6 +59,7 @@ void shift_left(int array[], int n)
 
 }
 
+/* Function to add process to the back of queue */
 void add_to_rear(int array[], int n, int element)
 {
 	for (int i = 0; i < n; i++)
@@ -68,9 +72,9 @@ void add_to_rear(int array[], int n, int element)
 	}
 }
 
+/* Function that arranges the queue in ascending order based on burst time*/
 void ascending(int array[], int number)
 {
-	// Arranges Ready Queue according to burst time in ascending order
 	int array_buffer;
 	for (int i = 0; i < number; ++i)
 	{
@@ -86,24 +90,27 @@ void ascending(int array[], int number)
 	}
 }
 
-/*Main prorgram */
+/*Main program */
 
 int main(void)
 {
-	// Variable delclaration
+	/* Variable delclaration */
 
 	int i, j, n, et_buffer, loop, tat[10], TQ, ct[10], max_process_time, response_times[10], max_arrival_time, size_t, queue_buffer, total_burst_time;
-	int next_exe_time_start = 0, total_arr_time, time_added;
+	int next_exe_time_start = 0, time_added;
 	float total_waiting_time = 0, total_turnaround_time = 0;
 	float awt = 0.0, att = 0.0, art = 0.0;
+
+
+ /* Prompt user input for number of processes */
 
 	printf("Enter the no of processes:");
 	scanf("%d", &n);
 
-	struct process process[n];	//Create the number of processes based on input.
+/* Create the number of process structs accordingly */
+	struct process process[n];
 
-	/*Getting the process inputs (burst time, arrival time, time quantum) */
-
+	/*Getting the process inputs (burst time, arrival time, time quantum) using a loop */
 	for (i = 0; i < n; i++)
 	{
 		printf("Enter burst time for process %d:", i + 1);
@@ -115,10 +122,11 @@ int main(void)
 		process[i].process_number = i + 1;
 	}
 
+  /* User input for Time quantum */
 	printf("\nEnter the size of time quantum:");
 	scanf("%d", &TQ);
 
-	//Finding biggest process time
+	/*Getting the biggest process time to assist with the loop*/
 	max_process_time = 0;
 	for (i = 0; i < n; i++)
 	{
@@ -128,13 +136,15 @@ int main(void)
 		}
 	}
 
+  /*Initialising the first run counter to 0, used to calculate response time
+  it will record the time when the process is first being ran. */
 	for (i = 0; i < n; i++)
 	{
 		process[i].burst_time_dup = process[i].burst_time;
 		process[i].first_run_counter = 0;
 	}
 
-	//Find latest arrival
+	/*Getting the latest arrival time*/
 	max_arrival_time = 0;
 
 	for (i = 0; i < n; i++)
@@ -145,40 +155,33 @@ int main(void)
 		}
 	}
 
-	//Initialize all values of the waiting time to zero intially.
+  /*Initally all process waiting times are zero*/
 	for (i = 0; i < n; i++)
 	{
 		process[i].waiting_time = 0;
 	}
 
-	//Printing out inputs.
+	/*Printing out the user inputs*/
 	for (i = 0; i < n; i++)
 	{
 		printf("Process %d \t burst time: %d \t arrival time: %d \t waiting time: %d\n", i + 1, process[i].burst_time, process[i].arrival_time, process[i].waiting_time);
 
 	}
 
-	int ready_q[n];
-	//Control variable to check if array is empty
+ /* Initialising elements in the ready queue to 0 instead of 'garabge values' */
+ 	int ready_q[n];
 	for (i = 0; i < n; i++)
 	{
 		ready_q[i] = 0;
 	}
 
-	//Calculate total burst time
+	/* Calculate total burst time */
 	for (i = 0; i < n; i++)
 	{
 		total_burst_time += process[i].burst_time;
-		//printf("Total process time needed: %d", total_burst_time);
 	}
 
-	for (i = 0; i < n; i++)
-	{
-		total_arr_time += process[i].arrival_time;
-
-	}
-
-	//Need to arrage base on arrival times
+	/*Arranging arrival times in order */
 	int arr_times[n];
 	for (i = 0; i < n; i++)
 	{
@@ -186,42 +189,50 @@ int main(void)
 	}
 
 	ascending(arr_times, n);
+
+  /*Determine the next timestamp to check for any new processes coming in before TQ is up*/
 	next_exe_time_start = arr_times[0] + TQ;
-	//printf("\n1st next start time %d", next_exe_time_start);
 
 	/*Main Loop */
 
-	int timer = 0;
-	int new_counter = 0;
-	int cxt_switches = 0;
-	int init_proc = 0;
+  /* Loop Variables*/
+  
+	int timer = 0;        /* Timer for this loop */
+	int new_counter = 0;  /* Variable counter to check if process is added*/
+	int cxt_switches = 0; /* Counter for context switches */
+	int init_proc = 0;    /* Initial process to check for change */
 
 	while (timer <= total_burst_time + arr_times[n - 1])
 	{
 		printf("\n\nCurrent time %d\n", timer);
 
+
+    /* If process exist in the ready queue */
 		if (ready_q[0] != 0)
 		{
-			//Check to see if process q is empty
+      /* Allocate CPU (reducing the remaning burst time */
 			process[ready_q[0] - 1].burst_time = process[ready_q[0] - 1].burst_time - 1;
 		}
 
+    /* Buffer to capture the process at the front of the ready queue */
 		int ar_buffer = ready_q[0];
-
+    
+    /* Loop to check for any new processes*/
 		for (i = 0; i < n; i++)
-		{
+		{ 
+
+      /* Condition if process have same arrival time as the previous process and if timer > 0 and nothing in ready queue */
 			if (timer == process[i].arrival_time && process[i].arrival_time == process[i - 1].arrival_time && i > 0 &&
 				ar_buffer == 0)
 			{
-				//If >1 processes comes in at t=0 check to see which one has smaller exe time. 
+				/* Counter to check if there is a new process arrived before TQ is up or any process finished execution*/
 				new_counter = 1;
-				add_to_rear(ready_q, n, process[i].process_number);
-				/*printf("First process arrival time %d\n", process[i].arrival_time);
-				printf("Comparing process arrival time %d \n",process[i-1].arrival_time);
-				printf("First process should not be here"); */
 
-				//Sort ascending
+        /* Add newly arrived process to the rear */
+				add_to_rear(ready_q, n, process[i].process_number); 
+			
 
+				/* Sort ascending based on burst time if processes have the same arrival time */
 				for (int i = 0; i < n; ++i)
 				{
 					for (int j = i + 1; j < n; ++j)
@@ -236,27 +247,36 @@ int main(void)
 					}
 				}
 			}
+      /* Condition to capture any process if timer matches with arrival time*/
 			else if (timer == process[i].arrival_time)
 			{
-				//Since CPU is already allocated after one second, add to rear.
+
+					/* Counter to check if there is a new process arrived before TQ is up or any process finished execution*/
+          
 				new_counter = 1;
-				//printf("Should be added to the rear");
+
+        /* Add newly arrived process to the rear */
 				add_to_rear(ready_q, n, process[i].process_number);
 
 			}
 		}
 
+    /* Condition to check whether a process finished execution */
 		if (process[ready_q[0] - 1].burst_time == 0 && ready_q[0] != 0)
 		{
 			printf("Process %d has finished execution\n", process[ready_q[0] - 1].process_number);
+
+      /* Determine when its the next timestamp to rearrage if new processes added */
 			next_exe_time_start = timer + TQ;
 
+
+      /* If there is new process added before process finished execution, rearrange based on burst time left*/
 			if (new_counter > 0)
 			{
-				//If process time is up, and new process added, rearrange
+				/* Remove process from queue if burst time = 0 */
 				remove_element(ready_q, process[ready_q[0] - 1].process_number, n);
 				shift_left(ready_q, n);
-				//Rearange and print out before removing
+				
 				for (int i = 0; i < n; ++i)
 				{
 					for (int j = i + 1; j < n; ++j)
@@ -271,17 +291,20 @@ int main(void)
 					}
 				}
 
-				new_counter = 0;	//Resetting the time stamp where it last got added
+				new_counter = 0;	/* Resetting the counter that checks for new processes */
 			}
+
+
+      /* If no new process added, just remove process that finished execution and move processes up 
+      like a normal round robin */
 			else
 			{
 				remove_element(ready_q, ready_q[0], n);
 				shift_left(ready_q, n);
 			}
-
+      /* Printing out the processes in the ready queue */
 			if (ready_q[0] != 0)
 			{
-				//Only print out if ready queue is not empty
 				printf("\nReady Queue:\n");
 				for (i = 0; i < n; i++)
 				{
@@ -292,16 +315,23 @@ int main(void)
 				}
 			}
 
+      /* Increament the number of context switches if process finished execution and another process moves up*/
 			if (ready_q[0] != 0)
 			{
 				cxt_switches++;
 			}
 		}
+
+    /* Check if TQ is up */
 		else if (timer == next_exe_time_start && process[ready_q[0]].process_number != 0)
 		{
+      /* Get the initial process at the start of the queue */
 			init_proc = ready_q[0];
+
+      /* If there is new process added before process finished execution, rearrange based on burst time left */
 			if (new_counter > 0)
 			{
+
 				printf("TQ is up, rearrange");
 				for (int i = 0; i < n; ++i)
 				{
@@ -316,36 +346,37 @@ int main(void)
 						}
 					}
 				}
-
-				new_counter = 0;	//Reseting the counter
+        /* Resetting the new process counter */
+				new_counter = 0;
 			}
+
+      /* If not new process added, just move processes up like a normal round robin*/
 			else
 			{
 				shift_left(ready_q, n);
 			}
 
+      /* Increment of context switches */
 			if (init_proc != ready_q[0])
 			{
 				cxt_switches++;
 			}
 
-			// printf("Next start time %d", next_exe_time_start);
-			// printf("Process has not finished execution but tq is up");
-
+      /* Determine when its the next timestamp to rearrage if new processes added */
 			if (process[ready_q[0] - 1].process_number != 0)
 			{
 				next_exe_time_start = next_exe_time_start + TQ;
 			}
+
+      /* Condition to catch if all processess have finished execution (if front of queue has no process) */
 			else
 			{
 				next_exe_time_start = 0;
 			}
 
-			//printf("\nBurst time left for process : %d", process[ready_q[0]-1].burst_time);
-
 			if (ready_q[0] != 0)
 			{
-				//Only print out if ready queue is not empty
+				/* Formatting the output based on the requirement */
 				printf("\nReady Queue:\n");
 				for (i = 0; i < n; i++)
 				{
@@ -357,6 +388,7 @@ int main(void)
 			}
 		}
 
+    /* As long as CPU is not allocated to the process (or process not at the front of queue), increment their waiting time */
 		for (i = 0; i < n; i++)
 		{
 			if (process[i].process_number != ready_q[0] && process[i].burst_time != 0)
@@ -365,11 +397,15 @@ int main(void)
 			}
 		}
 
+    /*Getting the response time for each process*/
+    
+    /* Increment the first run counter if the process ran before */
 		if (ready_q[0] != 0)
 		{
 			process[ready_q[0] - 1].first_run_counter++;
 		}
 
+    /*If counter incremented, assign the timer to the process response time */
 		if (process[ready_q[0] - 1].first_run_counter == 1)
 		{
 			process[ready_q[0] - 1].response_time = timer;
@@ -377,7 +413,7 @@ int main(void)
 
 		if (ready_q[0] != 0)
 		{
-			//Only print out if ready queue is not empty
+			/* Formatting the output based on the requirement */
 			printf("\nReady Queue:\n");
 			for (i = 0; i < n; i++)
 			{
@@ -387,10 +423,12 @@ int main(void)
 				}
 			}
 		}
-
+    
+    /* Cycling the timer */
 		timer++;
 	}
 
+  /* For loop to print the waiting times, reponse, turnaround times of each process*/
 	for (i = 0; i < n; i++)
 	{
 		process[i].waiting_time -= process[i].arrival_time;
@@ -401,10 +439,7 @@ int main(void)
     printf("Process %d \t waiting time: %d \t turnaround time: %d \t response time time: %d\n", i + 1, process[i].waiting_time, process[i].turnaround_time, process[i].response_time);
 	}
 
-
-
-
-
+/* Printing out Average waiting and turnaround time as well as the number of context switches*/
 	awt = total_waiting_time / n;
 	printf("\nAverage waiting time %f", total_waiting_time / n);
 	printf("\nAverage turnaround time %f", total_turnaround_time / n);
