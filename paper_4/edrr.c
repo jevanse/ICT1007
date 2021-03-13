@@ -829,18 +829,8 @@ int main(int argc, char const *argv[]) {
     edrr_processes = edrr_processes_head;
     Process *process = processes->head;
 
+	// Copy back EDRRProcesses into Processes
     copy_list_back(&process, edrr_processes);
-
-    // Print Process list just to check if the copying of list 
-    // worked properly.
-    printf("\n\tProcess Pid\tArrival Time\tBurst Time\tWaiting Time\tTurn around time\tResponse time\n");
-    printf("\t-----------\t------------\t----------\t------------\t----------------\t-------------\n");
-
-    while (process) {
-        // Original format string: "\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t\t%d\n"
-        printf("\t%-11d\t%-12d\t%-10d\t%-12d\t%-16d\t%-13d\n", process->pid, process->arrival_time, process->cpu_time, process->waiting_time, process->turnaround_time, process->response_time);
-        process = process->next;
-    }
 
     printf("\n\tNum of context switches: %d\n", num_of_context_switches);
 
@@ -872,7 +862,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	printf("\n\t[i] Saving results to '%s'...\n\n", out_filename);
-    // Write results to results.csv
+    // Write results to out_filename
     write_results(out_filename, processes);
 
     // Perform memory cleanup
