@@ -395,13 +395,11 @@ struct processes KFactor(struct processes *process_queue, int n){
 
 			ts = ts + p-> burst_time;
 			
-			if(loop != 0 && (loop+1) % 2 == 1){
+			if(loop != 0 && (loop+1) % 2 == 0){
 			k++;
 			}
 			
-			printf("Loop: %d\n", loop);
 			loop++;
-			printf("Loop: %d\n", loop);
 		}else if((KFactor_ReadyQueue-> size + KFactor_Results-> size) != process_queue-> size){
 			printf("Nothing in the Ready Queue\n");
 			// Find the next arrival time and time travel to that point in time
@@ -418,6 +416,60 @@ struct processes KFactor(struct processes *process_queue, int n){
 		}
 	}
 	return *KFactor_Results;
+}
+
+void controlTest(){
+	// Buffer Variable
+	struct process *p;
+	
+	// Main queue with control processes
+	Processes *control_process_queue = (Processes*) malloc(sizeof(Processes));
+	init_processes(control_process_queue);
+
+	// SJF Input processes
+	Processes *control_SJF = (Processes*) malloc(sizeof(Processes));
+	init_processes(control_SJF);
+	memcpy(control_SJF, control_process_queue, sizeof(Processes));
+
+	// KFactor Input processes
+	Processes *control_KFactor = (Processes*) malloc(sizeof(Processes));
+	init_processes(control_KFactor);
+	memcpy(control_KFactor, control_process_queue, sizeof(Processes));
+
+	// File input variables
+	char *filename = (char *) malloc(50);
+	char *file_contents;
+	sprintf(filename, "Clement/controltestcase.txt");
+
+	get_processes(filename, &control_process_queue);
+
+	p = control_process_queue->head;
+
+		// Check if anything was found
+		if(p == NULL){
+			printf("No testcases found\nExiting Application\n");
+			exit(EXIT_FAILURE);
+		}
+
+	// Running control test cases into algos
+	struct processes SJF_control_results = SJF(control_process_queue, control_process_queue-> size);
+	struct processes KFactor_control_results = KFactor(control_process_queue, control_process_queue-> size);
+
+	// Output results
+	int retcode;
+	retcode = write_results("test_related/test_results/paper_2/SJF/control.csv", &SJF_control_results);
+
+	if(retcode == -1){
+		printf("File not created\n");
+		exit(EXIT_FAILURE);
+	}
+
+	retcode = write_results("test_related/test_results/paper_2/KFactor/control.csv", &KFactor_control_results);
+
+	if(retcode == -1){
+		printf("File not created\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void exportResults(struct processes *result, char *dataset, char *type){
@@ -461,6 +513,8 @@ int main(){
 	char *dir = (char *) malloc(1000);
 	struct process *p;
 	int temp;
+
+	controlTest();
 
 	Processes *process_queue = (Processes*) malloc(sizeof(Processes));
 	init_processes(process_queue);
